@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Etek会议室预约系统</title>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -56,11 +57,58 @@
         
         .switch-container {
             display: flex;
-            justify-content: flex-end;
+            justify-content: center;
             gap: 8px;
             margin-bottom: 20px;
             flex-wrap: wrap;
             position: relative;
+        }
+        
+        .admin-icon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+        }
+        
+        .admin-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px) scale(1.05);
+        }
+        
+        .admin-tooltip {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .admin-icon:hover .admin-tooltip {
+            opacity: 1;
+            visibility: visible;
         }
         
         .switch-btn {
@@ -84,6 +132,10 @@
         
         .switch-btn i {
             margin-right: 6px;
+        }
+        
+        .skip-to-content-link:focus {
+            top: 0;
         }
         
         .app-container {
@@ -382,7 +434,7 @@
         
         .item {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
             padding: 12px;
             border-bottom: 1px solid #eee;
             align-items: center;
@@ -732,6 +784,7 @@
     </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-to-content-link" style="position: absolute; left: 0; top: -40px; padding: 8px; background: #38a169; color: white; z-index: 100; transition: top 0.3s;">跳转至主要内容</a>
     <div class="container">
         <header>
             <h1><i class="fas fa-calendar-alt"></i> Etek会议室预约系统</h1>
@@ -742,19 +795,22 @@
             <button class="switch-btn active" onclick="showSection('booking')">
                 <i class="fas fa-plus-circle"></i> 预约会议
             </button>
+            <button class="switch-btn" onclick="showSection('management')">
+                <i class="fas fa-list-alt"></i> 预约管理
+            </button>
             <button class="switch-btn" onclick="showRoomStatus()">
                 <i class="fas fa-calendar-check"></i> 会议室情况
             </button>
-            <button class="switch-btn" onclick="checkPassword('management')">
-                <i class="fas fa-list-alt"></i> 预约管理
-            </button>
-            <button class="switch-btn" onclick="checkPassword('rooms')">
-                <i class="fas fa-door-open"></i> 会议室管理
-            </button>
+            
+            <div class="admin-icon" onclick="goToAdmin()">
+                <i class="fas fa-cog"></i>
+                <div class="admin-tooltip">管理后台</div>
+            </div>
         </div>
         
         <!-- 预约界面 -->
         <div id="bookingSection">
+            <div id="main-content" tabindex="-1">
             <div class="app-container">
                 <div class="display-screen">
                     <div class="current-room">会议室使用情况</div>
@@ -841,6 +897,7 @@
                     <!-- 预约列表将动态生成 -->
                 </div>
             </div>
+            </div>
         </div>
         
         <!-- 预约管理界面 -->
@@ -850,6 +907,7 @@
                     <i class="fas fa-list-alt"></i>
                     <h2>预约管理</h2>
                 </div>
+                <button id="addReservationBtn" class="btn">添加预约</button>
             </div>
             
             <div class="item-list">
@@ -858,11 +916,58 @@
                     <div>会议室</div>
                     <div>日期</div>
                     <div>时间</div>
+                    <div>预约人</div>
+                    <div>预约部门</div>
                     <div>操作</div>
                 </div>
                 <div id="managementContainer">
                     <!-- 管理列表将动态生成 -->
                 </div>
+            </div>
+            
+            <div id="reservationFormContainer" class="form-container">
+                <h3 id="reservationFormTitle">添加预约</h3>
+                <form id="reservationForm">
+                    <input type="hidden" id="reservationId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="editMeetingRoom">会议室</label>
+                            <select id="editMeetingRoom" required>
+                                <option value="">-- 请选择会议室 --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editBookingDate">日期</label>
+                            <input type="date" id="editBookingDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editStartTime">开始时间</label>
+                            <input type="time" id="editStartTime" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editEndTime">结束时间</label>
+                            <input type="time" id="editEndTime" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editMeetingTitle">会议主题</label>
+                            <input type="text" id="editMeetingTitle" placeholder="请输入会议主题" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editBookerName">预约人</label>
+                            <input type="text" id="editBookerName" placeholder="请输入预约人姓名" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn">保存预约</button>
+                        <button type="button" id="cancelReservationForm" class="btn btn-secondary">取消</button>
+                    </div>
+                </form>
             </div>
         </div>
         
@@ -1105,10 +1210,12 @@
                 btn.classList.remove('active');
             });
             
-            // 显示选中的区域
+            // 显示选中的区域并设置对应按钮为active
             if (section === 'booking') {
                 document.getElementById('bookingSection').style.display = 'block';
-                event.target.classList.add('active');
+                // 找到预约会议按钮并设置为active
+                const bookingBtn = document.querySelector('.switch-btn[onclick="showSection(\'booking\')"]');
+                if (bookingBtn) bookingBtn.classList.add('active');
                 // 在移动端时滚动到会议室使用情况模块位置
                 if (window.innerWidth <= 900) {
                     const displayScreen = document.querySelector('.display-screen');
@@ -1120,11 +1227,15 @@
                 }
             } else if (section === 'management') {
                 document.getElementById('managementSection').style.display = 'block';
-                event.target.classList.add('active');
+                // 找到预约管理按钮并设置为active
+                const managementBtn = document.querySelector('.switch-btn[onclick="showSection(\'management\')"]');
+                if (managementBtn) managementBtn.classList.add('active');
                 displayManagement();
             } else if (section === 'rooms') {
                 document.getElementById('roomsSection').style.display = 'block';
-                event.target.classList.add('active');
+                // 找到会议室管理按钮并设置为active
+                const roomsBtn = document.querySelector('.switch-btn[onclick="checkPassword(\'rooms\')"]');
+                if (roomsBtn) roomsBtn.classList.add('active');
                 displayRooms();
             }
         }
@@ -1207,7 +1318,11 @@
                         <div>${room ? room.name : '未知会议室'}</div>
                         <div>${res.date}</div>
                         <div>${res.start} - ${res.end}</div>
+                        <div>${res.booker}</div>
                         <div class="item-actions">
+                            <button class="action-btn btn-edit" onclick="editReservation(${res.id})">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
                             <button class="action-btn btn-delete" onclick="deleteReservation(${res.id})">
                                 <i class="fas fa-trash"></i> 删除
                             </button>
@@ -1519,6 +1634,148 @@
         // 定期更新当前事件
         setInterval(updateCurrentEvent, 60000); // 每分钟更新一次
         
+        // 预约管理相关函数
+        let currentEditingReservation = null;
+        
+        // 添加预约按钮
+        document.getElementById('addReservationBtn').addEventListener('click', function() {
+            currentEditingReservation = null;
+            document.getElementById('reservationFormTitle').textContent = '添加预约';
+            document.getElementById('reservationForm').reset();
+            document.getElementById('reservationId').value = '';
+            generateEditRoomOptions();
+            setEditBookingDateRange();
+            document.getElementById('reservationFormContainer').style.display = 'block';
+        });
+        
+        // 取消预约表单
+        document.getElementById('cancelReservationForm').addEventListener('click', function() {
+            document.getElementById('reservationFormContainer').style.display = 'none';
+        });
+        
+        // 编辑预约
+        function editReservation(reservationId) {
+            const reservation = reservations.find(r => r.id === reservationId);
+            if (!reservation) return;
+            
+            currentEditingReservation = reservationId;
+            document.getElementById('reservationFormTitle').textContent = '编辑预约';
+            document.getElementById('reservationId').value = reservation.id;
+            document.getElementById('editMeetingRoom').value = reservation.room;
+            document.getElementById('editBookingDate').value = reservation.date;
+            document.getElementById('editStartTime').value = reservation.start;
+            document.getElementById('editEndTime').value = reservation.end;
+            document.getElementById('editMeetingTitle').value = reservation.title;
+            document.getElementById('editBookerName').value = reservation.booker;
+            generateEditRoomOptions();
+            setEditBookingDateRange();
+            document.getElementById('reservationFormContainer').style.display = 'block';
+        }
+        
+        // 生成编辑表单的会议室选项
+        function generateEditRoomOptions() {
+            const roomSelect = document.getElementById('editMeetingRoom');
+            roomSelect.innerHTML = '<option value="">-- 请选择会议室 --</option>';
+            
+            rooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room.id;
+                option.textContent = `${room.name} (${room.capacity}人)`;
+                roomSelect.appendChild(option);
+            });
+        }
+        
+        // 设置编辑表单的预约日期范围
+        function setEditBookingDateRange() {
+            const today = new Date();
+            const dateInput = document.getElementById('editBookingDate');
+            if (!dateInput.value) {
+                dateInput.valueAsDate = today;
+            }
+            dateInput.min = today.toISOString().split('T')[0];
+            const maxDate = new Date();
+            maxDate.setDate(today.getDate() + 30); // 允许预约30天内
+            dateInput.max = maxDate.toISOString().split('T')[0];
+        }
+        
+        // 预约表单提交
+        document.getElementById('reservationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const roomId = document.getElementById('editMeetingRoom').value;
+            const date = document.getElementById('editBookingDate').value;
+            const startTime = document.getElementById('editStartTime').value;
+            const endTime = document.getElementById('editEndTime').value;
+            const title = document.getElementById('editMeetingTitle').value;
+            const booker = document.getElementById('editBookerName').value;
+            
+            // 验证
+            if (!roomId || !date || !startTime || !endTime || !title || !booker) {
+                showError('请填写所有必填字段');
+                return;
+            }
+            
+            if (startTime >= endTime) {
+                showError('结束时间必须晚于开始时间');
+                return;
+            }
+            
+            if (checkTimeConflict(roomId, date, startTime, endTime, currentEditingReservation)) {
+                showError('该时间段已被预约，请选择其他时间');
+                return;
+            }
+            
+            let isEdit = false;
+            if (currentEditingReservation) {
+                // 编辑现有预约
+                const reservationIndex = reservations.findIndex(r => r.id === currentEditingReservation);
+                if (reservationIndex !== -1) {
+                    reservations[reservationIndex] = {
+                        id: currentEditingReservation,
+                        room: roomId,
+                        date: date,
+                        start: startTime,
+                        end: endTime,
+                        title: title,
+                        booker: booker
+                    };
+                    isEdit = true;
+                }
+            } else {
+                // 添加新预约
+                const newReservation = {
+                    id: Date.now(),
+                    room: roomId,
+                    date: date,
+                    start: startTime,
+                    end: endTime,
+                    title: title,
+                    booker: booker
+                };
+                reservations.push(newReservation);
+            }
+            
+            // 保存到后端
+            const success = await saveReservations();
+            if (success) {
+                const message = isEdit ? '预约更新成功！' : '预约添加成功！';
+                alert(message);
+                
+                document.getElementById('reservationFormContainer').style.display = 'none';
+                displayManagement();
+                displayReservations();
+                updateCurrentEvent();
+                
+                // 重新加载数据确保同步
+                await loadReservations();
+                displayManagement();
+                displayReservations();
+                updateCurrentEvent();
+            } else {
+                showError('保存失败，请重试');
+            }
+        });
+        
         // 密码验证相关函数
         function checkPassword(section) {
             pendingSection = section;
@@ -1551,11 +1808,14 @@
             }
         });
         
+        // 跳转到管理后台
+        function goToAdmin() {
+            window.location.href = '/admin/';
+        }
+        
         // 会议室情况日历相关函数
         function showRoomStatus() {
-            currentCalendarDate = new Date();
-            generateCalendar();
-            document.getElementById('calendarModal').style.display = 'block';
+            window.location.href = '/room_status/';
         }
         
         function closeCalendarModal() {

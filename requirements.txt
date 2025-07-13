@@ -1,3 +1,4 @@
-﻿Django==4.2.7
+Django==4.2.7
 gunicorn==21.2.0
 whitenoise==6.5.0
+django-simpleui==2025.6.24

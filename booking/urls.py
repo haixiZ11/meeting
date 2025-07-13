@@ -1,10 +1,12 @@
-﻿from django.urls import path
+from django.urls import path
 from . import views
 from . import api
 
 urlpatterns = [
     # 主页视图
     path('', views.index, name='index'),
+    path('booking-admin/', views.admin, name='admin'),
+    path('room_status/', views.room_status, name='room_status'),
     
     # API接口
     path('api/load_rooms/', api.load_rooms, name='load_rooms'),

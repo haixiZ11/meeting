@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会议室情况 - Etek会议室预约系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #4a5568;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .calendar-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .calendar-nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .calendar-nav button:hover {
+            background: #5a6fd8;
+            transform: scale(1.1);
+        }
+        
+        .calendar-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4a5568;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .view-btn {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .view-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .calendar-day-header {
+            background: #4a5568;
+            color: white;
+            padding: 15px 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .calendar-day {
+            background: white;
+            min-height: 120px;
+            padding: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .calendar-day:hover {
+            background: #f7fafc;
+        }
+        
+        .calendar-day.other-month {
+            background: #f8f9fa;
+            color: #a0aec0;
+        }
+        
+        .calendar-day.today {
+            background: #e6fffa;
+            border: 2px solid #38b2ac;
+        }
+        
+        .calendar-day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .calendar-event {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2px 6px;
+            margin: 1px 0;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        
+        .calendar-event:hover {
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        .legend-today { background: #38b2ac; }
+        .legend-event { background: linear-gradient(135deg, #667eea, #764ba2); }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .calendar-container {
+                padding: 15px;
+            }
+            
+            .calendar-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+                padding: 4px;
+            }
+            
+            .calendar-event {
+                font-size: 10px;
+                padding: 1px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-calendar-check"></i>
+                会议室情况
+            </h1>
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </button>
+        </div>
+        
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button onclick="changeMonth(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="calendar-title" id="calendarTitle">2025年1月</span>
+                    <button onclick="changeMonth(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="setView('month')">月视图</button>
+                    <button class="view-btn" onclick="setView('week')">周视图</button>
+                </div>
+            </div>
+            
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- 日历内容将动态生成 -->
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color legend-today"></div>
+                    <span>今天</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-event"></div>
+                    <span>有会议</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局变量
+        let rooms = [];
+        let reservations = [];
+        let currentCalendarDate = new Date();
+        let currentView = 'month';
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+        
+        // 初始化页面
+        async function initializePage() {
+            await loadRooms();
+            await loadReservations();
+            generateCalendar();
+        }
+        
+        // 加载会议室数据
+        async function loadRooms() {
+            try {
+                const response = await fetch('/api/load_rooms/');
+                rooms = await response.json();
+            } catch (error) {
+                console.error('加载会议室数据失败:', error);
+                rooms = [];
+            }
+        }
+        
+        // 加载预约数据
+        async function loadReservations() {
+            try {
+                const response = await fetch('/api/load_reservations/');
+                reservations = await response.json();
+            } catch (error) {
+                console.error('加载预约数据失败:', error);
+                reservations = [];
+            }
+        }
+        
+        // 返回主页
+        function goBack() {
+            window.location.href = '/';
+        }
+        
+        // 切换视图
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            generateCalendar();
+        }
+        
+        // 切换月份
+        function changeMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            generateCalendar();
+        }
+        
+        // 生成日历
+        function generateCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // 更新标题
+            document.getElementById('calendarTitle').textContent = `${year}年${month + 1}月`;
+            
+            if (currentView === 'month') {
+                generateMonthView(year, month);
+            } else {
+                generateWeekView(year, month);
+            }
+        }
+        
+        // 生成月视图
+        function generateMonthView(year, month) {
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            let calendarHTML = '';
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+            });
+            
+            // 生成日历格子
+            for (let i = 0; i < 42; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const dayNumber = currentDate.getDate();
+                const isCurrentMonth = currentDate.getMonth() === month;
+                const isToday = dateStr === todayStr;
+                
+                let dayClass = 'calendar-day';
+                if (!isCurrentMonth) dayClass += ' other-month';
+                if (isToday) dayClass += ' today';
+                
+                // 获取当天的会议
+                const dayReservations = reservations.filter(res => res.date === dateStr);
+                
+                let eventsHTML = '';
+                dayReservations.forEach(res => {
+                    const room = rooms.find(r => r.id === res.room);
+                    const roomName = room ? room.name : '未知';
+                    eventsHTML += `<div class="calendar-event" title="${res.title} - ${roomName} (${res.start}-${res.end})">${res.start} ${res.title}</div>`;
+                });
+                
+                calendarHTML += `
+                    <div class="${dayClass}">
+                        <div class="calendar-day-number">${dayNumber}</div>
+                        ${eventsHTML}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = calendarHTML;
+        }
+        
+        // 生成周视图
+        function generateWeekView(year, month) {
+            // 简化的周视图实现
+            generateMonthView(year, month);
+        }
+    </script>
+</body>
+</html>
