@@ -142,9 +142,9 @@ meeting_system/
 ```bash
 python manage.py createsuperuser
 ```
-原数据库账号:zhx_1
+后台账号:zhx_1
 password:meetingadmin
-按提示输入用户名、邮箱和密码即可。
+
 
 ## 常见问题
 
