@@ -1,0 +1,46 @@
+[
+    {
+        "model": "booking.room",
+        "pk": 1,
+        "fields": {
+            "name": "创新厅",
+            "capacity": 8,
+            "description": "适合小型创意会议",
+            "equipment": "投影仪, 白板",
+            "status": "available"
+        }
+    },
+    {
+        "model": "booking.room",
+        "pk": 2,
+        "fields": {
+            "name": "协作厅",
+            "capacity": 12,
+            "description": "适合团队协作会议",
+            "equipment": "电视, 视频会议设备",
+            "status": "available"
+        }
+    },
+    {
+        "model": "booking.room",
+        "pk": 3,
+        "fields": {
+            "name": "决策厅",
+            "capacity": 6,
+            "description": "适合高层决策会议",
+            "equipment": "视频会议系统, 智能白板",
+            "status": "available"
+        }
+    },
+    {
+        "model": "booking.room",
+        "pk": 4,
+        "fields": {
+            "name": "创意空间",
+            "capacity": 10,
+            "description": "灵活多变的创意空间",
+            "equipment": "投影仪, 移动白板",
+            "status": "available"
+        }
+    }
+]

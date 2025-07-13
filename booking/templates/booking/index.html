@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etek会议室预约系统</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #b21f1f;
+            --accent: #38a169;
+            --light: #f8f9fa;
+            --dark: #2c3e50;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        header h1 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            opacity: 0.9;
+        }
+        
+        .switch-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+        
+        .switch-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .switch-btn:hover, .switch-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .switch-btn i {
+            margin-right: 6px;
+        }
+        
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            color: var(--dark);
+        }
+        
+        .card-title i {
+            margin-right: 12px;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .card-title h2 {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.2);
+        }
+        
+        .time-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 15px;
+        }
+        
+        .btn:hover {
+            background: #142255;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: var(--gray);
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .display-screen {
+            background: var(--primary);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .current-room {
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .current-time {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            text-align: center;
+            font-weight: 700;
+            margin: 15px 0;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        .current-date {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            text-align: center;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+        
+        .current-event {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .next-event {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .event-title {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .event-title i {
+            margin-right: 8px;
+        }
+        
+        .event-details {
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            line-height: 1.4;
+        }
+        
+        .reservations-list {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .reservations-list h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+        }
+        
+        .reservations-list h3 i {
+            margin-right: 8px;
+            color: var(--primary);
+        }
+        
+        .reservation-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .reservation-item {
+                grid-template-columns: 1fr;
+                gap: 5px;
+                text-align: center;
+            }
+        }
+        
+        .reservation-item:last-child {
+            border-bottom: none;
+        }
+        
+        .reservation-item:hover {
+            background: #f9f9f9;
+        }
+        
+        .reservation-time {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+        
+        .reservation-title {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .reservation-booker {
+            font-style: italic;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .confirmation {
+            background: var(--accent);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+            font-size: 0.9rem;
+        }
+        
+        .management-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .management-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .management-title {
+            display: flex;
+            align-items: center;
+            color: var(--dark);
+        }
+        
+        .management-title i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .management-title h2 {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            margin: 0;
+        }
+        
+        .item-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .item {
+                grid-template-columns: 1fr;
+                gap: 5px;
+                text-align: center;
+            }
+        }
+        
+        .item-header {
+            font-weight: 700;
+            background: var(--light-gray);
+            border-radius: 8px;
+        }
+        
+        .item:hover {
+            background: #f9f9f9;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: #1976d2;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+        
+        .form-container {
+            background: rgba(240, 244, 248, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid var(--accent);
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .no-items {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+            font-size: 1rem;
+        }
+        
+        .no-items i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 15px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .switch-container {
+                gap: 5px;
+            }
+            
+            .switch-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .time-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 移动端布局优化 - 确保预约表单在视图中 */
+        @media (max-width: 900px) {
+            .app-container {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            #bookingFormCard {
+                order: 2; /* 将预约表单放在第二位置 */
+                margin-top: 20px;
+            }
+            
+            .display-screen {
+                order: 1; /* 将会议室使用情况放在第一位置 */
+            }
+        }
+        
+        /* 密码对话框样式 */
+        .password-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .password-modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .password-modal h3 {
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .password-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .password-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .password-btn-confirm {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .password-btn-cancel {
+            background: var(--gray);
+            color: white;
+        }
+        
+        /* 会议室情况日历对话框样式 */
+        .calendar-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .calendar-modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .calendar-nav button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .calendar-nav button:hover {
+            background: #142255;
+        }
+        
+        .calendar-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .calendar-day-header {
+            background: var(--primary);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .calendar-day {
+            background: white;
+            min-height: 80px;
+            padding: 5px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .calendar-day:hover {
+            background: #f0f8ff;
+        }
+        
+        .calendar-day.other-month {
+            background: #f5f5f5;
+            color: #999;
+        }
+        
+        .calendar-day.today {
+            background: #e3f2fd;
+            border: 2px solid var(--primary);
+        }
+        
+        .calendar-day-number {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .calendar-event {
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: var(--dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calendar-alt"></i> Etek会议室预约系统</h1>
+            <p>高效管理 · 智能预约 · 实时状态</p>
+        </header>
+        
+        <div class="switch-container">
+            <button class="switch-btn active" onclick="showSection('booking')">
+                <i class="fas fa-plus-circle"></i> 预约会议
+            </button>
+            <button class="switch-btn" onclick="showRoomStatus()">
+                <i class="fas fa-calendar-check"></i> 会议室情况
+            </button>
+            <button class="switch-btn" onclick="checkPassword('management')">
+                <i class="fas fa-list-alt"></i> 预约管理
+            </button>
+            <button class="switch-btn" onclick="checkPassword('rooms')">
+                <i class="fas fa-door-open"></i> 会议室管理
+            </button>
+        </div>
+        
+        <!-- 预约界面 -->
+        <div id="bookingSection">
+            <div class="app-container">
+                <div class="display-screen">
+                    <div class="current-room">会议室使用情况</div>
+                    <div class="current-time" id="currentTime">10:30:45</div>
+                    <div class="current-date" id="currentDate">2025年7月13日 星期四</div>
+                    
+                    <div class="current-event" id="currentEvent">
+                        <div class="event-title">
+                            <i class="fas fa-microphone-alt"></i> 
+                            <span id="currentEventTitle">暂无进行中的会议</span>
+                        </div>
+                        <div class="event-details" id="currentEventDetails">
+                            <div>会议室空闲中</div>
+                        </div>
+                    </div>
+                    
+                    <div class="next-event" id="nextEvent">
+                        <div class="event-title">
+                            <i class="fas fa-clock"></i> 
+                            <span>下一个会议</span>
+                        </div>
+                        <div class="event-details" id="nextEventDetails">
+                            <div>暂无后续会议</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" id="bookingFormCard">
+                    <div class="card-title">
+                        <i class="fas fa-calendar-plus"></i>
+                        <h2>新建预约</h2>
+                    </div>
+                    
+                    <form id="bookingForm">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="meetingRoom">会议室</label>
+                            <select id="meetingRoom" required>
+                                <option value="">-- 请选择会议室 --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bookingDate">日期</label>
+                            <input type="date" id="bookingDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>时间</label>
+                            <div class="time-container">
+                                <input type="time" id="startTime" placeholder="开始时间" required>
+                                <input type="time" id="endTime" placeholder="结束时间" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="meetingTitle">会议主题</label>
+                            <input type="text" id="meetingTitle" placeholder="请输入会议主题" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bookerName">预约人</label>
+                            <input type="text" id="bookerName" placeholder="请输入预约人姓名" required>
+                        </div>
+                    <div class="form-group">
+                            <label for="bookerDepartment">预约部门</label>
+                            <input type="text" id="bookerDepartment" placeholder="请输入预约部门" required>
+                        </div> 
+
+                        <button type="submit" class="btn">提交预约</button>
+                        
+                        <div class="confirmation" id="confirmation">
+                            <i class="fas fa-check-circle"></i> 预约成功！您的会议已安排。
+                        </div>
+                        
+                        <div class="error-message" id="errorMessage"></div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="reservations-list">
+                <h3><i class="fas fa-list"></i> 今日会议安排</h3>
+                <div id="reservationsContainer">
+                    <!-- 预约列表将动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 预约管理界面 -->
+        <div id="managementSection" class="management-section">
+            <div class="management-header">
+                <div class="management-title">
+                    <i class="fas fa-list-alt"></i>
+                    <h2>预约管理</h2>
+                </div>
+            </div>
+            
+            <div class="item-list">
+                <div class="item item-header">
+                    <div>会议主题</div>
+                    <div>会议室</div>
+                    <div>日期</div>
+                    <div>时间</div>
+                    <div>操作</div>
+                </div>
+                <div id="managementContainer">
+                    <!-- 管理列表将动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 会议室管理界面 -->
+        <div id="roomsSection" class="management-section">
+            <div class="management-header">
+                <div class="management-title">
+                    <i class="fas fa-door-open"></i>
+                    <h2>会议室管理</h2>
+                </div>
+                <button id="addRoomBtn" class="btn">添加会议室</button>
+            </div>
+            
+            <div class="item-list">
+                <div class="item item-header">
+                    <div>名称</div>
+                    <div>容量</div>
+                    <div>设备</div>
+                    <div>状态</div>
+                    <div>操作</div>
+                </div>
+                <div id="roomsContainer">
+                    <!-- 会议室列表将动态生成 -->
+                </div>
+            </div>
+            
+            <div id="roomFormContainer" class="form-container">
+                <h3 id="roomFormTitle">添加会议室</h3>
+                <form id="roomForm">
+                    <input type="hidden" id="roomId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="roomName">会议室名称</label>
+                            <input type="text" id="roomName" placeholder="例如：创新厅" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="roomCapacity">最大容量</label>
+                            <input type="number" id="roomCapacity" min="1" placeholder="例如：10" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="roomDescription">描述</label>
+                            <input type="text" id="roomDescription" placeholder="会议室简要描述">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="roomEquipment">设备</label>
+                            <input type="text" id="roomEquipment" placeholder="例如：投影仪, 白板">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="roomStatus">状态</label>
+                            <select id="roomStatus">
+                                <option value="available">可用</option>
+                                <option value="maintenance">维护中</option>
+                                <option value="unavailable">不可用</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn">保存会议室</button>
+                        <button type="button" id="cancelRoomForm" class="btn btn-secondary">取消</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 密码验证对话框 -->
+        <div id="passwordModal" class="password-modal">
+            <div class="password-modal-content">
+                <h3>请输入管理密码</h3>
+                <input type="password" id="passwordInput" class="password-input" placeholder="请输入密码" maxlength="10">
+                <div class="password-buttons">
+                    <button class="password-btn password-btn-confirm" onclick="verifyPassword()">确认</button>
+                    <button class="password-btn password-btn-cancel" onclick="closePasswordModal()">取消</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 会议室情况日历对话框 -->
+        <div id="calendarModal" class="calendar-modal">
+            <div class="calendar-modal-content">
+                <span class="close-modal" onclick="closeCalendarModal()">&times;</span>
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button onclick="changeMonth(-1)">&lt;</button>
+                        <span class="calendar-title" id="calendarTitle">2025年1月</span>
+                        <button onclick="changeMonth(1)">&gt;</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- 日历内容将动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Etek会议室预约系统 &copy; 2025 | 技术支持: Haixi.Zhao</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let rooms = [];
+        let reservations = [];
+        let currentEditingRoom = null;
+        let pendingSection = null;
+        let currentCalendarDate = new Date();
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // 在移动端时，如果当前是预约界面，滚动到会议室使用情况模块位置
+            if (window.innerWidth <= 900) {
+                // 检查是否有active类的按钮是预约会议按钮
+                const activeButton = document.querySelector('.switch-btn.active');
+                if (activeButton && activeButton.textContent.trim().includes('预约会议')) {
+                    const displayScreen = document.querySelector('.display-screen');
+                    if (displayScreen) {
+                        setTimeout(() => {
+                            displayScreen.scrollIntoView({ behavior: 'smooth' });
+                        }, 500);
+                    }
+                }
+            }
+        });
+        
+        // 初始化页面
+        async function initializePage() {
+            await loadRooms();
+            await loadReservations();
+            generateRoomOptions();
+            displayReservations();
+            displayRooms();
+            updateCurrentEvent();
+            setBookingDateRange();
+        }
+        
+        // 设置预约日期范围（7天内）
+        function setBookingDateRange() {
+            const today = new Date();
+            const dateInput = document.getElementById('bookingDate');
+            dateInput.valueAsDate = today;
+            dateInput.min = today.toISOString().split('T')[0];
+            const maxDate = new Date();
+            maxDate.setDate(today.getDate() + 7);
+            dateInput.max = maxDate.toISOString().split('T')[0];
+        }
+        
+        // 加载会议室数据
+        async function loadRooms() {
+            try {
+                const response = await fetch('/api/load_rooms/');
+                rooms = await response.json();
+            } catch (error) {
+                console.error('加载会议室数据失败:', error);
+                rooms = [];
+            }
+        }
+        
+        // 加载预约数据
+        async function loadReservations() {
+            try {
+                const response = await fetch('/api/load_reservations/');
+                reservations = await response.json();
+            } catch (error) {
+                console.error('加载预约数据失败:', error);
+                reservations = [];
+            }
+        }
+        
+        // 保存会议室数据
+        async function saveRooms() {
+            try {
+                const response = await fetch('/api/save_rooms/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(rooms)
+                });
+                const result = await response.json();
+                return result.success;
+            } catch (error) {
+                console.error('保存会议室数据失败:', error);
+                return false;
+            }
+        }
+        
+        // 保存预约数据
+        async function saveReservations() {
+            try {
+                const response = await fetch('/api/save_reservations/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(reservations)
+                });
+                const result = await response.json();
+                return result.success;
+            } catch (error) {
+                console.error('保存预约数据失败:', error);
+                return false;
+            }
+        }
+        
+        // 获取CSRF Token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // 切换显示区域
+        function showSection(section) {
+            // 隐藏所有区域
+            document.getElementById('bookingSection').style.display = 'none';
+            document.getElementById('managementSection').style.display = 'none';
+            document.getElementById('roomsSection').style.display = 'none';
+            
+            // 移除所有按钮的active类
+            document.querySelectorAll('.switch-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的区域
+            if (section === 'booking') {
+                document.getElementById('bookingSection').style.display = 'block';
+                event.target.classList.add('active');
+                // 在移动端时滚动到会议室使用情况模块位置
+                if (window.innerWidth <= 900) {
+                    const displayScreen = document.querySelector('.display-screen');
+                    if (displayScreen) {
+                        setTimeout(() => {
+                            displayScreen.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                    }
+                }
+            } else if (section === 'management') {
+                document.getElementById('managementSection').style.display = 'block';
+                event.target.classList.add('active');
+                displayManagement();
+            } else if (section === 'rooms') {
+                document.getElementById('roomsSection').style.display = 'block';
+                event.target.classList.add('active');
+                displayRooms();
+            }
+        }
+        
+        // 生成会议室选项
+        function generateRoomOptions() {
+            const roomSelect = document.getElementById('meetingRoom');
+            roomSelect.innerHTML = '<option value="">-- 请选择会议室 --</option>';
+            
+            rooms.forEach(room => {
+                if (room.status === 'available') {
+                    const option = document.createElement('option');
+                    option.value = room.id;
+                    option.textContent = `${room.name} (${room.capacity}人)`;
+                    roomSelect.appendChild(option);
+                }
+            });
+        }
+        
+        // 更新日期时间
+        function updateDateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+            const dateStr = now.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            document.getElementById('currentTime').textContent = timeStr;
+            document.getElementById('currentDate').textContent = dateStr;
+        }
+        
+        // 显示预约列表
+        function displayReservations() {
+            const container = document.getElementById('reservationsContainer');
+            const today = new Date().toISOString().split('T')[0];
+            
+            const todayReservations = reservations.filter(res => res.date === today)
+                .sort((a, b) => a.start.localeCompare(b.start));
+            
+            if (todayReservations.length === 0) {
+                container.innerHTML = '<div class="no-items"><i class="fas fa-calendar-times"></i><p>今日暂无会议安排</p></div>';
+                return;
+            }
+            
+            container.innerHTML = todayReservations.map(res => {
+                const room = rooms.find(r => r.id === res.room);
+                return `
+                    <div class="reservation-item">
+                        <div class="reservation-time">${res.start} - ${res.end}</div>
+                        <div class="reservation-title">${res.title}</div>
+                        <div class="reservation-booker">${res.booker}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 显示管理列表
+        function displayManagement() {
+            const container = document.getElementById('managementContainer');
+            
+            if (reservations.length === 0) {
+                container.innerHTML = '<div class="no-items"><i class="fas fa-calendar-times"></i><p>暂无预约记录</p></div>';
+                return;
+            }
+            
+            const sortedReservations = [...reservations].sort((a, b) => {
+                const dateA = new Date(a.date + ' ' + a.start);
+                const dateB = new Date(b.date + ' ' + b.start);
+                return dateB - dateA;
+            });
+            
+            container.innerHTML = sortedReservations.map(res => {
+                const room = rooms.find(r => r.id === res.room);
+                return `
+                    <div class="item">
+                        <div>${res.title}</div>
+                        <div>${room ? room.name : '未知会议室'}</div>
+                        <div>${res.date}</div>
+                        <div>${res.start} - ${res.end}</div>
+                        <div class="item-actions">
+                            <button class="action-btn btn-delete" onclick="deleteReservation(${res.id})">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 显示会议室列表
+        function displayRooms() {
+            const container = document.getElementById('roomsContainer');
+            
+            if (rooms.length === 0) {
+                container.innerHTML = '<div class="no-items"><i class="fas fa-door-closed"></i><p>暂无会议室</p></div>';
+                return;
+            }
+            
+            container.innerHTML = rooms.map(room => `
+                <div class="item">
+                    <div>${room.name}</div>
+                    <div>${room.capacity}人</div>
+                    <div>${room.equipment || '无'}</div>
+                    <div>${getStatusText(room.status)}</div>
+                    <div class="item-actions">
+                        <button class="action-btn btn-edit" onclick="editRoom('${room.id}')">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="action-btn btn-delete" onclick="deleteRoom('${room.id}')">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'available': '可用',
+                'maintenance': '维护中',
+                'unavailable': '不可用'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 更新当前事件
+        function updateCurrentEvent() {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const currentTime = now.toTimeString().slice(0, 5);
+            
+            const currentReservation = reservations.find(res => {
+                return res.date === today && res.start <= currentTime && res.end > currentTime;
+            });
+            
+            const currentEventTitle = document.getElementById('currentEventTitle');
+            const currentEventDetails = document.getElementById('currentEventDetails');
+            
+            if (currentReservation) {
+                const room = rooms.find(r => r.id === currentReservation.room);
+                currentEventTitle.textContent = currentReservation.title;
+                currentEventDetails.innerHTML = `
+                    <div>时间: ${currentReservation.start} - ${currentReservation.end}</div>
+                    <div>会议室: ${room ? room.name : '未知'}</div>
+                    <div>预约人: ${currentReservation.booker}</div>
+                `;
+            } else {
+                currentEventTitle.textContent = '暂无进行中的会议';
+                currentEventDetails.innerHTML = '<div>会议室空闲中</div>';
+            }
+            
+            // 更新下一个会议
+            const nextReservation = reservations
+                .filter(res => {
+                    const resDateTime = new Date(res.date + ' ' + res.start);
+                    return resDateTime > now;
+                })
+                .sort((a, b) => {
+                    const dateA = new Date(a.date + ' ' + a.start);
+                    const dateB = new Date(b.date + ' ' + b.start);
+                    return dateA - dateB;
+                })[0];
+            
+            const nextEventDetails = document.getElementById('nextEventDetails');
+            
+            if (nextReservation) {
+                const room = rooms.find(r => r.id === nextReservation.room);
+                nextEventDetails.innerHTML = `
+                    <div>会议: ${nextReservation.title}</div>
+                    <div>时间: ${nextReservation.date} ${nextReservation.start} - ${nextReservation.end}</div>
+                    <div>会议室: ${room ? room.name : '未知'}</div>
+                    <div>预约人: ${nextReservation.booker}</div>
+                `;
+            } else {
+                nextEventDetails.innerHTML = '<div>暂无后续会议</div>';
+            }
+        }
+        
+        // 检查时间冲突
+        function checkTimeConflict(roomId, date, startTime, endTime, excludeId = null) {
+            return reservations.some(res => {
+                if (excludeId && res.id === excludeId) return false;
+                if (res.room !== roomId || res.date !== date) return false;
+                
+                return (startTime < res.end && endTime > res.start);
+            });
+        }
+        
+        // 显示错误消息
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 显示成功消息
+        function showSuccess() {
+            const confirmDiv = document.getElementById('confirmation');
+            confirmDiv.style.display = 'block';
+            setTimeout(() => {
+                confirmDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 预约表单提交
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const roomId = document.getElementById('meetingRoom').value;
+            const date = document.getElementById('bookingDate').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const title = document.getElementById('meetingTitle').value;
+            const booker = document.getElementById('bookerName').value;
+            
+            // 验证
+            if (!roomId || !date || !startTime || !endTime || !title || !booker) {
+                showError('请填写所有必填字段');
+                return;
+            }
+            
+            if (startTime >= endTime) {
+                showError('结束时间必须晚于开始时间');
+                return;
+            }
+            
+            if (checkTimeConflict(roomId, date, startTime, endTime)) {
+                showError('该时间段已被预约，请选择其他时间');
+                return;
+            }
+            
+            // 添加预约
+            const newReservation = {
+                id: Date.now(),
+                room: roomId,
+                date: date,
+                start: startTime,
+                end: endTime,
+                title: title,
+                booker: booker
+            };
+            
+            reservations.push(newReservation);
+            
+            // 保存到后端
+            const success = await saveReservations();
+            if (success) {
+                showSuccess();
+                this.reset();
+                setBookingDateRange();
+                displayReservations();
+                updateCurrentEvent();
+            } else {
+                showError('保存失败，请重试');
+            }
+        });
+        
+        // 删除预约
+        async function deleteReservation(id) {
+            if (confirm('确定要删除这个预约吗？')) {
+                reservations = reservations.filter(res => res.id !== id);
+                const success = await saveReservations();
+                if (success) {
+                    displayManagement();
+                    displayReservations();
+                    updateCurrentEvent();
+                } else {
+                    showError('删除失败，请重试');
+                }
+            }
+        }
+        
+        // 添加会议室按钮
+        document.getElementById('addRoomBtn').addEventListener('click', function() {
+            currentEditingRoom = null;
+            document.getElementById('roomFormTitle').textContent = '添加会议室';
+            document.getElementById('roomForm').reset();
+            document.getElementById('roomId').value = '';
+            document.getElementById('roomFormContainer').style.display = 'block';
+        });
+        
+        // 取消会议室表单
+        document.getElementById('cancelRoomForm').addEventListener('click', function() {
+            document.getElementById('roomFormContainer').style.display = 'none';
+        });
+        
+        // 编辑会议室
+        function editRoom(roomId) {
+            const room = rooms.find(r => r.id === roomId);
+            if (!room) return;
+            
+            currentEditingRoom = roomId;
+            document.getElementById('roomFormTitle').textContent = '编辑会议室';
+            document.getElementById('roomId').value = room.id;
+            document.getElementById('roomName').value = room.name;
+            document.getElementById('roomCapacity').value = room.capacity;
+            document.getElementById('roomDescription').value = room.description || '';
+            document.getElementById('roomEquipment').value = room.equipment || '';
+            document.getElementById('roomStatus').value = room.status;
+            document.getElementById('roomFormContainer').style.display = 'block';
+        }
+        
+        // 删除会议室
+        async function deleteRoom(roomId) {
+            if (confirm('确定要删除这个会议室吗？相关预约也将被删除。')) {
+                rooms = rooms.filter(r => r.id !== roomId);
+                reservations = reservations.filter(res => res.room !== roomId);
+                
+                const roomSuccess = await saveRooms();
+                const resSuccess = await saveReservations();
+                
+                if (roomSuccess && resSuccess) {
+                    displayRooms();
+                    generateRoomOptions();
+                    displayReservations();
+                    updateCurrentEvent();
+                } else {
+                    showError('删除失败，请重试');
+                }
+            }
+        }
+        
+        // 会议室表单提交
+        document.getElementById('roomForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('roomName').value;
+            const capacity = parseInt(document.getElementById('roomCapacity').value);
+            const description = document.getElementById('roomDescription').value;
+            const equipment = document.getElementById('roomEquipment').value;
+            const status = document.getElementById('roomStatus').value;
+            
+            if (!name || !capacity) {
+                showError('请填写会议室名称和容量');
+                return;
+            }
+            
+            let isEdit = false;
+            if (currentEditingRoom) {
+                // 编辑现有会议室
+                const roomIndex = rooms.findIndex(r => r.id === currentEditingRoom);
+                if (roomIndex !== -1) {
+                    rooms[roomIndex] = {
+                        id: currentEditingRoom,
+                        name: name,
+                        capacity: capacity,
+                        description: description,
+                        equipment: equipment,
+                        status: status
+                    };
+                    isEdit = true;
+                }
+            } else {
+                // 添加新会议室
+                const newRoom = {
+                    id: 'room' + Date.now(),
+                    name: name,
+                    capacity: capacity,
+                    description: description,
+                    equipment: equipment,
+                    status: status
+                };
+                rooms.push(newRoom);
+            }
+            
+            const success = await saveRooms();
+            if (success) {
+                // 显示成功提示
+                const message = isEdit ? '会议室更新成功！' : '会议室添加成功！';
+                alert(message);
+                
+                document.getElementById('roomFormContainer').style.display = 'none';
+                displayRooms();
+                generateRoomOptions();
+                
+                // 重新加载数据确保同步
+                await loadRooms();
+                displayRooms();
+                generateRoomOptions();
+            } else {
+                showError('保存失败，请重试');
+            }
+        });
+        
+        // 定期更新当前事件
+        setInterval(updateCurrentEvent, 60000); // 每分钟更新一次
+        
+        // 密码验证相关函数
+        function checkPassword(section) {
+            pendingSection = section;
+            document.getElementById('passwordModal').style.display = 'block';
+            document.getElementById('passwordInput').focus();
+        }
+        
+        function verifyPassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === '666888') {
+                closePasswordModal();
+                showSection(pendingSection);
+            } else {
+                alert('密码错误，请重新输入！');
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+        
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+            pendingSection = null;
+        }
+        
+        // 密码输入框回车事件
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyPassword();
+            }
+        });
+        
+        // 会议室情况日历相关函数
+        function showRoomStatus() {
+            currentCalendarDate = new Date();
+            generateCalendar();
+            document.getElementById('calendarModal').style.display = 'block';
+        }
+        
+        function closeCalendarModal() {
+            document.getElementById('calendarModal').style.display = 'none';
+        }
+        
+        function changeMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            generateCalendar();
+        }
+        
+        function generateCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // 更新标题
+            document.getElementById('calendarTitle').textContent = `${year}年${month + 1}月`;
+            
+            // 获取月份信息
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            let calendarHTML = '';
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+            });
+            
+            // 生成日历格子
+            for (let i = 0; i < 42; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const dayNumber = currentDate.getDate();
+                const isCurrentMonth = currentDate.getMonth() === month;
+                const isToday = dateStr === todayStr;
+                
+                let dayClass = 'calendar-day';
+                if (!isCurrentMonth) dayClass += ' other-month';
+                if (isToday) dayClass += ' today';
+                
+                // 获取当天的会议
+                const dayReservations = reservations.filter(res => res.date === dateStr);
+                
+                let eventsHTML = '';
+                dayReservations.forEach(res => {
+                    const room = rooms.find(r => r.id === res.room);
+                    const roomName = room ? room.name : '未知';
+                    eventsHTML += `<div class="calendar-event" title="${res.title} - ${roomName} (${res.start}-${res.end})">${res.start} ${res.title}</div>`;
+                });
+                
+                calendarHTML += `
+                    <div class="${dayClass}">
+                        <div class="calendar-day-number">${dayNumber}</div>
+                        ${eventsHTML}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = calendarHTML;
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const passwordModal = document.getElementById('passwordModal');
+            const calendarModal = document.getElementById('calendarModal');
+            
+            if (event.target === passwordModal) {
+                closePasswordModal();
+            }
+            if (event.target === calendarModal) {
+                closeCalendarModal();
+            }
+        }
+    </script>
+</body>
+</html>

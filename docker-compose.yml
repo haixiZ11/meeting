@@ -1,0 +1,14 @@
+﻿version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./staticfiles:/app/staticfiles
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+      - DJANGO_SETTINGS_MODULE=meeting_system.settings
+    restart: unless-stopped
