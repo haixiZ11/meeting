@@ -143,6 +143,7 @@ meeting_system/
 python manage.py createsuperuser
 ```
 后台账号:zhx_1
+
 password:meetingadmin
 
 
