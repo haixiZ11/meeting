@@ -1,7 +1,8 @@
 # Etek会议室预约系统
 
 一个基于Django的会议室预约管理系统，支持会议室预约、管理和状态查看功能。
-
+##
+![image](https://github.com/haixiZ11/meeting/blob/main/data/home.png)
 ## 项目特点
 
 - 会议室预约与管理
