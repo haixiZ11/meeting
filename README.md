@@ -143,9 +143,6 @@ meeting_system/
 ```bash
 python manage.py createsuperuser
 ```
-后台账号:zhx_1
-
-password:meetingadmin
 
 
 ## 常见问题
@@ -162,14 +159,4 @@ password:meetingadmin
    - 尝试删除 migrations 文件夹中除 __init__.py 外的所有文件
    - 重新运行 `python manage.py makemigrations booking`
 
-## 开发与贡献
 
-1. Fork 项目
-2. 创建功能分支：`git checkout -b feature/your-feature`
-3. 提交更改：`git commit -m 'Add some feature'`
-4. 推送到分支：`git push origin feature/your-feature`
-5. 提交 Pull Request
-
-## 许可证
-
-本项目采用 MIT 许可证 
