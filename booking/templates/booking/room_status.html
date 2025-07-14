@@ -423,7 +423,8 @@
                 dayReservations.forEach(res => {
                     const room = rooms.find(r => r.id === res.room);
                     const roomName = room ? room.name : '未知';
-                    eventsHTML += `<div class="calendar-event" title="${res.title} - ${roomName} (${res.start}-${res.end})">${res.start} ${res.title}</div>`;
+                    const department = res.department ? ` - ${res.department}` : '';
+                    eventsHTML += `<div class="calendar-event" title="${res.title} - ${roomName} - ${res.booker}${department} (${res.start}-${res.end})">${res.start} ${res.title}</div>`;
                 });
                 
                 calendarHTML += `
