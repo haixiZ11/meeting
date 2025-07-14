@@ -1,8 +1,12 @@
 from django.urls import path
+from django.contrib import admin
 from . import views
 from . import api
 
 urlpatterns = [
+    # Django管理员
+    path('admin/', admin.site.urls),
+    
     # 主页视图
     path('', views.index, name='index'),
     path('booking-admin/', views.admin, name='admin'),

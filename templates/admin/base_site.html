@@ -1,27 +1,7 @@
 {% extends "admin/base.html" %}
-{% load static %}
 
 {% block title %}{{ title }} | {{ site_title|default:_('Etek会议室预约系统') }}{% endblock %}
 
-{% block extrahead %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/admin-custom.css' %}">
-{% endblock %}
-
 {% block branding %}
-<a href="#main-content" class="skip-to-content-link">跳转主页</a>
-<h1 id="site-name">
-    <a href="{% url 'index' %}" class="home-link" title="返回主页">
-        <i class="icon-home"></i> 会议室预约系统
-    </a>
-    <span class="separator">|</span>
-    <a href="{% url 'admin:index' %}" class="admin-link">
-        管理后台
-    </a>
-</h1>
-{% endblock %}
-
-{% block content %}
-<div id="main-content" tabindex="-1">
-    {{ block.super }}
-</div>
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Etek会议室预约系统</a></h1>
 {% endblock %}
