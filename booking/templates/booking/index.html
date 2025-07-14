@@ -89,6 +89,17 @@
             transform: translateY(-2px) scale(1.05);
         }
         
+        footer .admin-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        footer .admin-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        
         .admin-tooltip {
             position: absolute;
             bottom: -35px;
@@ -801,11 +812,6 @@
             <button class="switch-btn" onclick="showRoomStatus()">
                 <i class="fas fa-calendar-check"></i> 会议室情况
             </button>
-            
-            <div class="admin-icon" onclick="goToAdmin()">
-                <i class="fas fa-cog"></i>
-                <div class="admin-tooltip">管理后台</div>
-            </div>
         </div>
         
         <!-- 预约界面 -->
@@ -1056,7 +1062,7 @@
         </div>
         
         <footer>
-            <p>Etek会议室预约系统 &copy; 2025 | 技术支持: Haixi.Zhao</p>
+            <p>Etek会议室预约系统 &copy; 2025 | 技术支持: Haixi.Zhao | <a href="/admin/" class="admin-link">管理后台</a></p>
         </footer>
     </div>
 
