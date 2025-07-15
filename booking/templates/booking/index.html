@@ -297,6 +297,8 @@
             flex-direction: column;
         }
         
+
+        
         .current-room {
             font-size: clamp(1.5rem, 4vw, 2.2rem);
             font-weight: bold;
@@ -436,11 +438,13 @@
         
         .management-section {
             display: none;
-            background: rgba(255, 255, 255, 0.92);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .management-header {
@@ -470,17 +474,22 @@
         }
         
         .item-list {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e9ea;
         }
         
         .item {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+            grid-template-columns: 1.5fr 1fr 1.2fr 1.5fr 1fr 1fr 120px;
+            padding: 15px 12px;
+            border-bottom: 1px solid #e8e9ea;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            transition: all 0.2s ease;
+            background: white;
         }
         
         @media (max-width: 768px) {
@@ -511,46 +520,62 @@
         
         .item-header {
             font-weight: 700;
-            background: var(--light-gray);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border-radius: 8px;
+            padding: 15px 12px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
         
         .item:hover {
-            background: #f9f9f9;
+            background: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         .item-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             justify-content: center;
         }
         
         .action-btn {
-            padding: 6px 12px;
+            padding: 8px 12px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 50px;
+            justify-content: center;
         }
         
         .btn-edit {
-            background: #2196f3;
+            background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
             color: white;
+            box-shadow: 0 2px 6px rgba(79, 195, 247, 0.3);
         }
         
         .btn-edit:hover {
-            background: #1976d2;
+            background: linear-gradient(135deg, #29b6f6 0%, #0288d1 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 195, 247, 0.4);
         }
         
         .btn-delete {
-            background: #f44336;
+            background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
             color: white;
+            box-shadow: 0 2px 6px rgba(239, 83, 80, 0.3);
         }
         
         .btn-delete:hover {
-            background: #d32f2f;
+            background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 83, 80, 0.4);
         }
         
         .form-container {
@@ -643,6 +668,79 @@
             
             .display-screen {
                 order: 1; /* 将会议室使用情况放在第一位置 */
+            }
+        }
+        
+        /* 今日会议安排样式 */
+        #reservationsContainer {
+            margin-top: 10px;
+        }
+        
+        .today-reservation-row {
+            display: grid;
+            grid-template-columns: 140px 2fr 120px 100px 120px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            background: transparent;
+            font-size: 1.05rem;
+        }
+        
+        .today-reservation-row:last-child {
+            border-bottom: none;
+        }
+        
+        .today-reservation-time {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: #222;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .status-ongoing {
+            background: #38a169; /* 绿色 - 进行中 */
+        }
+        
+        .status-upcoming {
+            background: #e53e3e; /* 红色 - 即将开始 */
+        }
+        
+        .status-ended {
+            background: #bdbdbd; /* 灰色 - 已结束 */
+        }
+        
+        .today-reservation-title {
+            color: #222;
+            text-align: center;
+        }
+        
+        .today-reservation-room,
+        .today-reservation-booker,
+        .today-reservation-department {
+            text-align: center;
+            padding-left: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .today-reservation-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+                text-align: center;
+                padding: 15px 10px;
+            }
+            
+            .today-reservation-time {
+                justify-content: center;
             }
         }
         
@@ -1259,9 +1357,9 @@
             <button class="switch-btn" onclick="showRoomStatus()">
                 <i class="fas fa-calendar-check"></i> 会议室日历
             </button>
-            <a href="{% url 'status_display' %}" class="switch-btn">
+            <button class="switch-btn" onclick="window.open('/status_display/', '_blank')">
                 <i class="fas fa-tv"></i> 状态显示屏
-            </a>
+            </button>
         </div>
         
         <!-- 预约界面 -->
@@ -1536,6 +1634,7 @@
             </div>
         </div>
         
+
 
         <!-- 会议室情况日历对话框 -->
         <div id="calendarModal" class="calendar-modal">
@@ -2191,31 +2290,75 @@
         // 显示预约列表
         function displayReservations() {
             const container = document.getElementById('reservationsContainer');
+            container.innerHTML = '';
             const today = new Date().toISOString().split('T')[0];
-            
-            // 过滤出今天的预约
             const todayReservations = reservations.filter(res => res.date === today);
+
+            todayReservations.sort((a, b) => a.start.localeCompare(b.start));
+
+            // 添加标题行
+            const headerRow = document.createElement('div');
+            headerRow.className = 'today-reservation-row';
+            headerRow.style.fontWeight = 'bold';
+            headerRow.style.backgroundColor = '#f8f9fa';
+            headerRow.style.borderBottom = '2px solid #dee2e6';
+            headerRow.innerHTML = `
+                <div class="today-reservation-time" style="text-align: center;">时间</div>
+                <div class="today-reservation-title" style="text-align: center;">主题</div>
+                <div class="today-reservation-room" style="text-align: center;">会议室</div>
+                <div class="today-reservation-booker">预约人</div>
+                <div class="today-reservation-department">预约部门</div>
+            `;
+            container.appendChild(headerRow);
             
             if (todayReservations.length === 0) {
-                container.innerHTML = '<div class="no-items"><i class="fas fa-calendar-times"></i><p>今天暂无会议安排</p></div>';
+                const noDataRow = document.createElement('div');
+                noDataRow.className = 'today-reservation-row';
+                noDataRow.innerHTML = '<div colspan="4" style="text-align: center; color: #666; grid-column: 1 / -1;">今天暂无会议安排</div>';
+                container.appendChild(noDataRow);
                 return;
             }
             
-            // 按时间排序
-            const sortedReservations = todayReservations.sort((a, b) => {
-                return a.start.localeCompare(b.start);
-            });
-            
-            container.innerHTML = sortedReservations.map(res => {
+            todayReservations.forEach(res => {
                 const room = rooms.find(r => r.id === res.room);
-                return `
-                    <div class="reservation-item">
-                        <div class="reservation-time">${res.start} - ${res.end}</div>
-                        <div class="reservation-title">${res.title} (${room ? room.name : '未知会议室'})</div>
-                        <div class="reservation-booker">${res.booker} ${res.department ? '(' + res.department + ')' : ''}</div>
+                const status = getReservationStatus(res.start, res.end);
+                const statusClass = 
+                    status === 'ongoing' ? 'status-ongoing' :
+                    status === 'upcoming' ? 'status-upcoming' : 'status-ended';
+
+                const row = document.createElement('div');
+                row.className = 'today-reservation-row';
+                row.innerHTML = `
+                    <div class="today-reservation-time">
+                        <span class="status-indicator ${statusClass}"></span>
+                        ${res.start} - ${res.end}
                     </div>
+                    <div class="today-reservation-title">${res.title}</div>
+                    <div class="today-reservation-room">${room ? room.name : '未知会议室'}</div>
+                    <div class="today-reservation-booker">${res.booker}</div>
+                    <div class="today-reservation-department">${res.department || '未指定'}</div>
                 `;
-            }).join('');
+                container.appendChild(row);
+            });
+        }
+        
+        // 获取预约状态
+        function getReservationStatus(startTime, endTime) {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const currentTime = now.toTimeString().slice(0, 5);
+            
+            const [startHour, startMinute] = startTime.split(':').map(Number);
+            const [endHour, endMinute] = endTime.split(':').map(Number);
+            
+            const startDate = new Date();
+            startDate.setHours(startHour, startMinute, 0, 0);
+            const endDate = new Date();
+            endDate.setHours(endHour, endMinute, 0, 0);
+            
+            if (now < startDate) return 'upcoming';
+            if (now >= startDate && now <= endDate) return 'ongoing';
+            return 'ended';
         }
         
         // 显示预约管理列表
@@ -2879,6 +3022,8 @@
             
             document.getElementById('calendarGrid').innerHTML = calendarHTML;
         }
+        
+
         
         // 点击模态框外部关闭
         window.onclick = function(event) {
