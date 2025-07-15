@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会议室状态显示屏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+
+        .status-display {
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .status-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .status-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .status-time {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .room-status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .room-status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        .room-status-card.occupied {
+            border-left-color: #f44336;
+        }
+
+        .room-status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .room-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .room-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .room-status.available {
+            background: #e8f5e8;
+            color: #4CAF50;
+        }
+
+        .room-status.occupied {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .current-meeting {
+            margin-bottom: 20px;
+        }
+
+        .meeting-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .meeting-time {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .meeting-progress {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .next-meetings {
+            margin-top: 20px;
+        }
+
+        .next-meetings h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .next-meeting-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #2196F3;
+        }
+
+        .next-meeting-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .next-meeting-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .no-meetings {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .rooms-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .status-title {
+                font-size: 2rem;
+            }
+            
+            .room-status-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-display">
+        <div class="status-header">
+            <h1 class="status-title">会议室状态显示屏</h1>
+            <div class="status-time" id="currentTime"></div>
+        </div>
+        
+        <div class="rooms-grid" id="roomsGrid">
+            <!-- 会议室状态卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                weekday: 'long'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // 全局变量存储数据
+        let meetingRooms = [];
+        let reservations = [];
+
+        // 从数据库加载会议室数据
+        async function loadRoomsFromDB() {
+            try {
+                const response = await fetch('/api/load_rooms/');
+                if (response.ok) {
+                    meetingRooms = await response.json();
+                    console.log('会议室数据加载成功:', meetingRooms);
+                } else {
+                    console.error('加载会议室数据失败:', response.status);
+                }
+            } catch (error) {
+                console.error('加载会议室数据出错:', error);
+            }
+        }
+
+        // 从数据库加载预约数据
+        async function loadReservationsFromDB() {
+            try {
+                const response = await fetch('/api/load_reservations/');
+                if (response.ok) {
+                    reservations = await response.json();
+                    console.log('预约数据加载成功:', reservations);
+                } else {
+                    console.error('加载预约数据失败:', response.status);
+                }
+            } catch (error) {
+                console.error('加载预约数据出错:', error);
+            }
+        }
+
+        // 更新状态显示屏（参考huiyi.html中的updateStatusDisplay函数）
+        function updateStatusDisplay() {
+            const now = new Date();
+            const currentHours = now.getHours();
+            const currentMinutes = now.getMinutes();
+            const today = new Date().toISOString().split('T')[0];
+            const container = document.getElementById('roomsGrid');
+            if (!container) return;
+            
+            // 如果数据还未加载完成，显示加载提示
+            if (!meetingRooms || meetingRooms.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 50px;">正在加载会议室数据...</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            meetingRooms.forEach(room => {
+                // 获取该会议室今天的预约
+                const todayReservations = reservations.filter(res => res.date === today && res.room === String(room.id));
+                let currentEvent = null;
+                let nextEvent = null;
+                
+                todayReservations.forEach(res => {
+                    const [startHour, startMinute] = res.start.split(':').map(Number);
+                    const [endHour, endMinute] = res.end.split(':').map(Number);
+                    
+                    if ((currentHours > startHour || (currentHours === startHour && currentMinutes >= startMinute)) &&
+                        (currentHours < endHour || (currentHours === endHour && currentMinutes < endMinute))) {
+                        currentEvent = res;
+                    }
+                    
+                    if (currentHours < startHour || (currentHours === startHour && currentMinutes < startMinute)) {
+                        if (!nextEvent || res.start < nextEvent.start) {
+                            nextEvent = res;
+                        }
+                    }
+                });
+                
+                // 构建卡片
+                const card = document.createElement('div');
+                card.className = `room-status-card ${currentEvent ? 'occupied' : ''}`;
+                
+                let cardHTML = `
+                    <div class="room-status-header">
+                        <div class="room-name">${room.name} (${room.capacity}人)</div>
+                        <div class="room-status ${room.status === 'available' ? 'available' : 'occupied'}">
+                            ${room.status === 'available' ? (currentEvent ? '使用中' : '空闲') : (room.status === 'maintenance' ? '维护中' : '不可用')}
+                        </div>
+                    </div>
+                `;
+                
+                if (currentEvent) {
+                    const progress = getProgress(currentEvent.start, currentEvent.end);
+                    cardHTML += `
+                        <div class="current-meeting">
+                            <div class="meeting-time">${currentEvent.start} - ${currentEvent.end}</div>
+                            <div class="meeting-progress">
+                                <div class="progress-bar" style="width: ${progress}%"></div>
+                            </div>
+                            <div class="progress-text">进度: ${Math.round(progress)}%</div>
+                            <div class="meeting-title">${currentEvent.title}</div>
+                            <div style="color: #666; margin-top: 8px;">预约人: ${currentEvent.booker}</div>
+                        </div>
+                    `;
+                } else {
+                    cardHTML += `
+                        <div class="no-meetings">
+                            当前无会议
+                        </div>
+                    `;
+                }
+                
+                if (nextEvent) {
+                    cardHTML += `
+                        <div class="next-meetings">
+                            <h4>下一个会议</h4>
+                            <div class="next-meeting-item">
+                                <div class="next-meeting-title">${nextEvent.title}</div>
+                                <div class="next-meeting-time">${nextEvent.start} - ${nextEvent.end}</div>
+                                <div style="color: #666; font-size: 0.9rem;">预约人: ${nextEvent.booker}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = cardHTML;
+                container.appendChild(card);
+            });
+        }
+
+        // 辅助函数：计算进度条百分比（参考huiyi.html中的getProgress函数）
+        function getProgress(startTime, endTime) {
+            const now = new Date();
+            const [startHour, startMinute] = startTime.split(':').map(Number);
+            const [endHour, endMinute] = endTime.split(':').map(Number);
+            const startDate = new Date();
+            startDate.setHours(startHour, startMinute, 0, 0);
+            const endDate = new Date();
+            endDate.setHours(endHour, endMinute, 0, 0);
+            const totalDuration = endDate - startDate;
+            const elapsedTime = now - startDate;
+            let progress = (elapsedTime / totalDuration) * 100;
+            progress = Math.max(0, Math.min(100, progress));
+            return progress;
+        }
+
+        // 加载所有数据并更新显示
+        async function loadDataAndUpdate() {
+            await Promise.all([
+                loadRoomsFromDB(),
+                loadReservationsFromDB()
+            ]);
+            updateStatusDisplay();
+        }
+
+        // 初始化
+        async function init() {
+            updateCurrentTime();
+            
+            // 首次加载数据
+            await loadDataAndUpdate();
+            
+            // 每秒更新时间
+            setInterval(updateCurrentTime, 1000);
+            
+            // 每5分钟重新加载数据并更新显示
+            setInterval(loadDataAndUpdate, 300000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

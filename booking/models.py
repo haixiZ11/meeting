@@ -27,6 +27,7 @@ class Reservation(models.Model):
     end_time = models.TimeField(verbose_name="结束时间")
     title = models.CharField(max_length=255, verbose_name="会议主题")
     booker = models.CharField(max_length=100, verbose_name="预约人")
+    department = models.CharField(max_length=100, blank=True, null=True, verbose_name="预约部门")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
     def __str__(self):

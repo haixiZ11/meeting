@@ -1,12 +1,17 @@
 from django.urls import path
+from django.contrib import admin
 from . import views
 from . import api
 
 urlpatterns = [
+    # Django管理员
+    path('admin/', admin.site.urls),
+    
     # 主页视图
     path('', views.index, name='index'),
     path('booking-admin/', views.admin, name='admin'),
     path('room_status/', views.room_status, name='room_status'),
+    path('status_display/', views.status_display, name='status_display'),
     
     # API接口
     path('api/load_rooms/', api.load_rooms, name='load_rooms'),

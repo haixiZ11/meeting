@@ -1,6 +1,4 @@
-﻿# Docker Compose configuration
-
-services:
+﻿services:
   web:
     build: .
     ports:
@@ -9,7 +7,7 @@ services:
       - ./staticfiles:/app/staticfiles
       - ./data:/app/data  # 数据持久化存储
     environment:
-      - DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
-      - DJANGO_SETTINGS_MODULE=meeting_system.settings
+      - DEBUG=True
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,*
+      - DJANGO_SETTINGS_MODULE=settings
     restart: always

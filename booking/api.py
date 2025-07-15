@@ -34,7 +34,8 @@ def load_reservations(request):
             'start': res.start_time.strftime('%H:%M'),
             'end': res.end_time.strftime('%H:%M'),
             'title': res.title,
-            'booker': res.booker
+            'booker': res.booker,
+            'department': res.department or ''
         })
     return JsonResponse(reservations, safe=False)
 
@@ -169,6 +170,7 @@ def save_reservations(request):
                     reservation.end_time = end_time
                     reservation.title = res_data.get('title', '')
                     reservation.booker = res_data.get('booker', '')
+                    reservation.department = res_data.get('department', '')
                     reservation.save()
                 except Reservation.DoesNotExist:
                     # 如果ID不存在，创建新预约
@@ -179,7 +181,8 @@ def save_reservations(request):
                         start_time=start_time,
                         end_time=end_time,
                         title=res_data.get('title', ''),
-                        booker=res_data.get('booker', '')
+                        booker=res_data.get('booker', ''),
+                        department=res_data.get('department', '')
                     )
             else:
                 # 创建新预约
@@ -189,7 +192,8 @@ def save_reservations(request):
                     start_time=start_time,
                     end_time=end_time,
                     title=res_data.get('title', ''),
-                    booker=res_data.get('booker', '')
+                    booker=res_data.get('booker', ''),
+                    department=res_data.get('department', '')
                 )
                 received_ids.add(new_res.id)
         
