@@ -457,6 +457,24 @@
                 grid-template-columns: 1fr;
                 gap: 5px;
                 text-align: center;
+                padding: 15px 10px;
+            }
+            
+            .item-header {
+                display: none; /* 在移动端隐藏表头 */
+            }
+            
+            .item:not(.item-header) div::before {
+                content: attr(data-label);
+                display: block;
+                font-weight: bold;
+                margin-bottom: 5px;
+                color: var(--primary);
+                font-size: 0.9rem;
+            }
+            
+            .item-actions {
+                margin-top: 10px;
             }
         }
         
@@ -1065,6 +1083,18 @@
             </div>
         </div>
         
+        <!-- 密码验证对话框 -->
+        <div id="passwordModal" class="password-modal">
+            <div class="password-modal-content">
+                <h3>请输入管理员密码</h3>
+                <input type="password" id="passwordInput" class="password-input" placeholder="请输入密码">
+                <div class="password-buttons">
+                    <button class="password-btn password-btn-confirm" onclick="verifyPassword()">确认</button>
+                    <button class="password-btn password-btn-cancel" onclick="closePasswordModal()">取消</button>
+                </div>
+            </div>
+        </div>
+        
         <footer>
             <p>Etek会议室预约系统 &copy; 2025 | 技术支持: Haixi.Zhao | <a href="/admin/" class="admin-link">管理后台</a></p>
         </footer>
@@ -1084,19 +1114,8 @@
             updateDateTime();
             setInterval(updateDateTime, 1000);
             
-            // 在移动端时，如果当前是预约界面，滚动到会议室使用情况模块位置
-            if (window.innerWidth <= 900) {
-                // 检查是否有active类的按钮是预约会议按钮
-                const activeButton = document.querySelector('.switch-btn.active');
-                if (activeButton && activeButton.textContent.trim().includes('预约会议')) {
-                    const displayScreen = document.querySelector('.display-screen');
-                    if (displayScreen) {
-                        setTimeout(() => {
-                            displayScreen.scrollIntoView({ behavior: 'smooth' });
-                        }, 500);
-                    }
-                }
-            }
+            
+            // 如果用户需要，可以使用"会议室使用情况"按钮手动导航
         });
         
         // 初始化页面
@@ -1215,15 +1234,14 @@
                 // 找到预约会议按钮并设置为active
                 const bookingBtn = document.querySelector('.switch-btn[onclick="showSection(\'booking\')"]');
                 if (bookingBtn) bookingBtn.classList.add('active');
-                // 在移动端时滚动到会议室使用情况模块位置
-                if (window.innerWidth <= 900) {
-                    const displayScreen = document.querySelector('.display-screen');
-                    if (displayScreen) {
-                        setTimeout(() => {
-                            displayScreen.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
+                
+                // 滚动到新建预约位置
+                setTimeout(() => {
+                    const bookingFormCard = document.getElementById('bookingFormCard');
+                    if (bookingFormCard) {
+                        bookingFormCard.scrollIntoView({ behavior: 'smooth' });
                     }
-                }
+                }, 100);
             } else if (section === 'management') {
                 document.getElementById('managementSection').style.display = 'block';
                 // 找到预约管理按钮并设置为active
@@ -1233,9 +1251,14 @@
             } else if (section === 'rooms') {
                 document.getElementById('roomsSection').style.display = 'block';
                 // 找到会议室管理按钮并设置为active
-                const roomsBtn = document.querySelector('.switch-btn[onclick="checkPassword(\'rooms\')"]');
+                const roomsBtn = document.querySelector('.switch-btn[onclick="showRoomStatus()"]');
                 if (roomsBtn) roomsBtn.classList.add('active');
                 displayRooms();
+            }
+            
+            // 切换区域后滚动到页面顶部（除了booking区域，它会滚动到新建预约位置）
+            if (section !== 'booking') {
+                window.scrollTo({top: 0, behavior: 'smooth'});
             }
         }
         
@@ -1318,12 +1341,12 @@
                 const room = rooms.find(r => r.id === res.room);
                 return `
                     <div class="item">
-                        <div>${res.title}</div>
-                        <div>${room ? room.name : '未知会议室'}</div>
-                        <div>${res.date}</div>
-                        <div>${res.start} - ${res.end}</div>
-                        <div>${res.booker}</div>
-                        <div>${res.department || '未指定'}</div>
+                        <div data-label="会议主题">${res.title}</div>
+                        <div data-label="会议室">${room ? room.name : '未知会议室'}</div>
+                        <div data-label="日期">${res.date}</div>
+                        <div data-label="时间">${res.start} - ${res.end}</div>
+                        <div data-label="预约人">${res.booker}</div>
+                        <div data-label="预约部门">${res.department || '未指定'}</div>
                         <div class="item-actions">
                             <button class="action-btn btn-edit" onclick="editReservation(${res.id})">
                                 <i class="fas fa-edit"></i> 编辑
@@ -1348,10 +1371,10 @@
             
             container.innerHTML = rooms.map(room => `
                 <div class="item">
-                    <div>${room.name}</div>
-                    <div>${room.capacity}人</div>
-                    <div>${room.equipment || '无'}</div>
-                    <div>${getStatusText(room.status)}</div>
+                    <div data-label="名称">${room.name}</div>
+                    <div data-label="容量">${room.capacity}人</div>
+                    <div data-label="设备">${room.equipment || '无'}</div>
+                    <div data-label="状态">${getStatusText(room.status)}</div>
                     <div class="item-actions">
                         <button class="action-btn btn-edit" onclick="editRoom('${room.id}')">
                             <i class="fas fa-edit"></i> 编辑
@@ -1792,8 +1815,19 @@
         // 密码验证相关函数
         function checkPassword(section) {
             pendingSection = section;
-            document.getElementById('passwordModal').style.display = 'block';
-            document.getElementById('passwordInput').focus();
+            const passwordModal = document.getElementById('passwordModal');
+            if (passwordModal) {
+                passwordModal.style.display = 'block';
+                const passwordInput = document.getElementById('passwordInput');
+                if (passwordInput) {
+                    passwordInput.value = ''; // 清空密码输入框
+                    passwordInput.focus();
+                }
+            } else {
+                console.error('密码验证对话框不存在');
+                // 如果对话框不存在，直接跳转
+                showSection(section);
+            }
         }
         
         function verifyPassword() {
@@ -1809,8 +1843,14 @@
         }
         
         function closePasswordModal() {
-            document.getElementById('passwordModal').style.display = 'none';
-            document.getElementById('passwordInput').value = '';
+            const passwordModal = document.getElementById('passwordModal');
+            if (passwordModal) {
+                passwordModal.style.display = 'none';
+                const passwordInput = document.getElementById('passwordInput');
+                if (passwordInput) {
+                    passwordInput.value = '';
+                }
+            }
             pendingSection = null;
         }
         
