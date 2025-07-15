@@ -90,7 +90,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    '/app/static',  # 修改为绝对路径，与Dockerfile中创建的目录对应
 ]
 
 # WhiteNoise配置

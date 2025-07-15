@@ -24,6 +24,8 @@ COPY . .
 
 # 创建数据目录
 RUN mkdir -p /app/data
+# 创建静态文件目录
+RUN mkdir -p /app/static
 
 # 暴露端口
 EXPOSE 8000
