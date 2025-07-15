@@ -118,22 +118,39 @@ python manage.py runserver
 ## 项目结构
 
 ```
-meeting_system/
-├── booking/                # 主应用
-│   ├── templates/          # HTML模板
-│   ├── migrations/         # 数据库迁移文件
-│   ├── fixtures/           # 初始数据
-│   ├── models.py           # 数据模型
-│   ├── views.py            # 视图函数
-│   └── api.py              # API接口
-├── meeting_system/         # 项目配置
-│   ├── settings.py         # 项目设置
-│   └── urls.py             # URL路由
-├── static/                 # 静态文件
-├── templates/              # 全局模板
-├── Dockerfile              # Docker配置
-├── docker-compose.yml      # Docker Compose配置
-└── requirements.txt        # 项目依赖
+### Django 主项目文件
+- `__init__.py` - Python包初始化文件
+- `settings.py` - 项目配置设置
+- `urls.py` - URL路由配置
+- `wsgi.py` - WSGI应用入口
+- `asgi.py` - ASGI应用入口
+- `manage.py` - Django命令行工具
+### 会议室预约模块 (booking)
+- `models.py` - 数据模型定义（会议室、预约记录等）
+- `views.py` - 视图函数和类
+- `urls.py` - URL路由映射
+- `admin.py` - 后台管理界面配置
+- `forms.py` - 表单定义
+- `api.py` - API接口定义
+### 模板文件
+- `templates/booking/` - 预约系统模板
+  - `admin.html` - 管理页面模板
+  - `index.html` - 首页模板
+  - `room_status.html` - 会议室状态页模板
+- `templates/admin/` - 管理后台模板定制
+### 静态资源
+- `static/css/` - CSS样式文件
+- `staticfiles/` - 收集的静态文件
+### 数据相关
+- `data/` - 数据存储目录
+  - `db.sqlite3` - SQLite数据库文件
+  - `date.png`, `home.png` - 图片资源
+### 部署与配置
+- `Dockerfile` - Docker镜像构建配置
+- `docker-compose.yml` - Docker Compose配置
+- `requirements.txt` - Python依赖包列表
+### 初始化数据
+- `booking/fixtures/initial_data.json` - 初始数据
 ```
 
 ## 账户信息
