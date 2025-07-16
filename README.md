@@ -114,6 +114,7 @@ python manage.py runserver
 2. 使用超级用户账号登录（需先创建超级用户：`python manage.py createsuperuser`）
 3. 管理会议室：添加、编辑、删除会议室
 4. 管理预约：查看、删除预约记录
+   
 5.user：admin   password：meetingadmin
 
 ## 项目结构
