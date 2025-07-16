@@ -15,8 +15,6 @@
 
 - 后端：Django 4.2.7
 - 前端：HTML, CSS, JavaScript
-- 服务器：Gunicorn
-- 静态文件处理：Whitenoise
 - 容器化：Docker
 
 ## 安装与运行
