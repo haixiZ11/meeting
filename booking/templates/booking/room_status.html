@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>会议室情况 - Etek会议室预约系统</title>
+    <title>会议室日历 - Etek会议室预约系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
@@ -267,7 +267,7 @@
         <div class="header">
             <h1>
                 <i class="fas fa-calendar-check"></i>
-                会议室情况
+                会议室日历
             </h1>
             <button class="back-btn" onclick="goBack()">
                 <i class="fas fa-arrow-left"></i>
@@ -363,9 +363,14 @@
             generateCalendar();
         }
         
-        // 切换月份
+        // 切换月份或周
         function changeMonth(direction) {
-            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            if (currentView === 'month') {
+                currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            } else {
+                // 周视图时，按周切换
+                currentCalendarDate.setDate(currentCalendarDate.getDate() + (direction * 7));
+            }
             generateCalendar();
         }
         
@@ -375,11 +380,27 @@
             const month = currentCalendarDate.getMonth();
             
             // 更新标题
-            document.getElementById('calendarTitle').textContent = `${year}年${month + 1}月`;
-            
             if (currentView === 'month') {
+                document.getElementById('calendarTitle').textContent = `${year}年${month + 1}月`;
                 generateMonthView(year, month);
             } else {
+                // 周视图显示周范围
+                const weekStart = new Date(currentCalendarDate);
+                weekStart.setDate(currentCalendarDate.getDate() - currentCalendarDate.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                
+                const startMonth = weekStart.getMonth() + 1;
+                const startDay = weekStart.getDate();
+                const endMonth = weekEnd.getMonth() + 1;
+                const endDay = weekEnd.getDate();
+                
+                if (startMonth === endMonth) {
+                    document.getElementById('calendarTitle').textContent = `${year}年${startMonth}月${startDay}日 - ${endDay}日`;
+                } else {
+                    document.getElementById('calendarTitle').textContent = `${year}年${startMonth}月${startDay}日 - ${endMonth}月${endDay}日`;
+                }
+                
                 generateWeekView(year, month);
             }
         }
@@ -440,8 +461,53 @@
         
         // 生成周视图
         function generateWeekView(year, month) {
-            // 简化的周视图实现
-            generateMonthView(year, month);
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            // 获取当前周的开始日期（周日）
+            const currentWeekStart = new Date(currentCalendarDate);
+            currentWeekStart.setDate(currentCalendarDate.getDate() - currentCalendarDate.getDay());
+            
+            let calendarHTML = '';
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+            });
+            
+            // 生成一周的日历格子
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(currentWeekStart);
+                currentDate.setDate(currentWeekStart.getDate() + i);
+                
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const dayNumber = currentDate.getDate();
+                const isToday = dateStr === todayStr;
+                
+                let dayClass = 'calendar-day';
+                if (isToday) dayClass += ' today';
+                
+                // 获取当天的会议
+                const dayReservations = reservations.filter(res => res.date === dateStr);
+                
+                let eventsHTML = '';
+                dayReservations.forEach(res => {
+                    const room = rooms.find(r => r.id === res.room);
+                    const roomName = room ? room.name : '未知';
+                    const department = res.department ? ` - ${res.department}` : '';
+                    eventsHTML += `<div class="calendar-event" title="${res.title} - ${roomName} - ${res.booker}${department} (${res.start}-${res.end})">${res.start} ${res.title}</div>`;
+                });
+                
+                calendarHTML += `
+                    <div class="${dayClass}">
+                        <div class="calendar-day-number">${dayNumber}</div>
+                        ${eventsHTML}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = calendarHTML;
         }
     </script>
 </body>
