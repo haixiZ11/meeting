@@ -1013,15 +1013,67 @@
         }
         
         @media (max-width: 768px) {
-            .today-reservation-row {
-                grid-template-columns: 1fr;
-                gap: 5px;
-                text-align: center;
-                padding: 15px 10px;
+            /* 隐藏表头行 */
+            .today-reservation-row[style*="font-weight: bold"] {
+                display: none;
             }
             
-            .today-reservation-time {
-                justify-content: center;
+            .today-reservation-row {
+                display: block;
+                padding: 15px;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                background: #f9f9f9;
+            }
+            
+            .today-reservation-row:last-child {
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .today-reservation-time,
+            .today-reservation-title,
+            .today-reservation-room,
+            .today-reservation-booker,
+            .today-reservation-department {
+                display: block;
+                text-align: left;
+                padding: 5px 0;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .today-reservation-time::before {
+                content: "时间: ";
+                font-weight: bold;
+                color: #666;
+            }
+            
+            .today-reservation-title::before {
+                content: "主题: ";
+                font-weight: bold;
+                color: #666;
+            }
+            
+            .today-reservation-room::before {
+                content: "会议室: ";
+                font-weight: bold;
+                color: #666;
+            }
+            
+            .today-reservation-booker::before {
+                content: "预约人: ";
+                font-weight: bold;
+                color: #666;
+            }
+            
+            .today-reservation-department::before {
+                content: "预约部门: ";
+                font-weight: bold;
+                color: #666;
+            }
+            
+            .today-reservation-department {
+                border-bottom: none;
             }
         }
         
