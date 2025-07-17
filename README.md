@@ -162,18 +162,3 @@ python manage.py createsuperuser
 ```
 
 
-## 常见问题
-
-1. **静态文件无法加载**
-   - 确保已运行 `python manage.py collectstatic`
-   - 检查 settings.py 中的静态文件配置
-
-2. **Docker容器无法启动**
-   - 检查端口是否被占用
-   - 查看日志：`docker-compose logs`
-
-3. **数据库迁移错误**
-   - 尝试删除 migrations 文件夹中除 __init__.py 外的所有文件
-   - 重新运行 `python manage.py makemigrations booking`
-
-

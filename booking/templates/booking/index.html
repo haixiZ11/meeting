@@ -2283,6 +2283,11 @@
                 updateRoomAvailability();
                 updateAvailableTimeSlots();
                 
+                // 确保在所有DOM元素准备好后更新统计数据
+                setTimeout(() => {
+                    updateReservationStats();
+                }, 100);
+                
             } catch (error) {
                 console.error('初始化页面时出错:', error);
                 // 即使出错也保持占位符显示
@@ -3168,6 +3173,9 @@
             
             // 显示所有预约
             displayFilteredReservations();
+            
+            // 更新统计数据
+            updateReservationStats();
         }
         
         // 显示会议室列表
@@ -3260,6 +3268,47 @@
             } else {
                 nextEventDetails.innerHTML = '<div>暂无后续会议</div>';
             }
+        }
+        
+        // 更新预约统计数据（支持筛选）
+        function updateReservationStats() {
+            console.log('更新统计数据，当前预约数组:', reservations);
+            
+            const filteredReservations = getFilteredReservations();
+            
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const currentTime = now.toTimeString().slice(0, 5);
+            
+            // 总预约数（根据筛选条件）
+            const totalReservations = filteredReservations.length;
+            console.log('筛选后总预约数:', totalReservations);
+            document.getElementById('totalReservations').textContent = totalReservations;
+            
+            // 今日预约数（根据筛选条件）
+            const todayReservations = filteredReservations.filter(res => res.date === today).length;
+            console.log('筛选后今日预约数:', todayReservations, '今天日期:', today);
+            document.getElementById('todayReservations').textContent = todayReservations;
+            
+            // 即将到来的预约数（未来24小时内，根据筛选条件）
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            
+            const upcomingReservations = filteredReservations.filter(res => {
+                // 今天剩余的预约
+                if (res.date === today && res.start > currentTime) {
+                    return true;
+                }
+                // 明天的预约
+                if (res.date === tomorrowStr) {
+                    return true;
+                }
+                return false;
+            }).length;
+            
+            console.log('筛选后即将到来的预约数:', upcomingReservations);
+            document.getElementById('upcomingReservations').textContent = upcomingReservations;
         }
         
         // 检查时间冲突
@@ -3369,6 +3418,7 @@
                 generateWeekCalendar();
                 generateRoomStatusCards();
                 updateRoomAvailability();
+                updateReservationStats();
                 
                 // 重置时间选择器显示
                 const startDisplay = document.getElementById('startTimeDisplay');
@@ -3398,6 +3448,7 @@
                     generateWeekCalendar();
                     generateRoomStatusCards();
                     updateRoomAvailability();
+                    updateReservationStats();
                 } else {
                     showError('删除失败，请重试');
                 }
@@ -3665,6 +3716,7 @@
                 generateWeekCalendar();
                 generateRoomStatusCards();
                 updateAvailableTimeSlots();
+                updateReservationStats();
             } else {
                 showError('保存失败，请重试');
             }
@@ -3802,50 +3854,7 @@
         
         // 筛选预约数据显示
         function displayFilteredReservations() {
-            const roomFilter = document.getElementById('filterRoom').value;
-            const dateFilter = document.getElementById('filterDate').value;
-            const searchTerm = document.getElementById('searchBooker').value.toLowerCase();
-            
-            let filteredReservations = [...reservations];
-            
-            // 按会议室筛选
-            if (roomFilter) {
-                filteredReservations = filteredReservations.filter(res => res.room === roomFilter);
-            }
-            
-            // 按日期筛选
-            if (dateFilter) {
-                const today = new Date().toISOString().split('T')[0];
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tomorrowStr = tomorrow.toISOString().split('T')[0];
-                
-                switch(dateFilter) {
-                    case 'today':
-                        filteredReservations = filteredReservations.filter(res => res.date === today);
-                        break;
-                    case 'tomorrow':
-                        filteredReservations = filteredReservations.filter(res => res.date === tomorrowStr);
-                        break;
-                    case 'week':
-                        const weekStart = new Date();
-                        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekStart.getDate() + 6);
-                        filteredReservations = filteredReservations.filter(res => {
-                            const resDate = new Date(res.date);
-                            return resDate >= weekStart && resDate <= weekEnd;
-                        });
-                        break;
-                }
-            }
-            
-            // 按预约人搜索
-            if (searchTerm) {
-                filteredReservations = filteredReservations.filter(res => 
-                    res.booker.toLowerCase().includes(searchTerm)
-                );
-            }
+            const filteredReservations = getFilteredReservations();
             
             // 按日期和时间排序
             filteredReservations.sort((a, b) => {
@@ -3891,21 +3900,135 @@
             }).join('');
         }
         
+        // 获取当前筛选后的预约数据
+        function getFilteredReservations() {
+            const roomFilter = document.getElementById('filterRoom').value;
+            const dateFilter = document.getElementById('filterDate').value;
+            const searchTerm = document.getElementById('searchBooker').value.toLowerCase();
+            
+            let filteredReservations = [...reservations];
+            
+            // 按会议室筛选
+            if (roomFilter) {
+                filteredReservations = filteredReservations.filter(res => res.room === roomFilter);
+            }
+            
+            // 按日期筛选
+            if (dateFilter) {
+                const today = new Date().toISOString().split('T')[0];
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split('T')[0];
+                
+                switch(dateFilter) {
+                    case 'today':
+                        filteredReservations = filteredReservations.filter(res => res.date === today);
+                        break;
+                    case 'tomorrow':
+                        filteredReservations = filteredReservations.filter(res => res.date === tomorrowStr);
+                        break;
+                    case 'week':
+                        const weekStart = new Date();
+                        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+                        filteredReservations = filteredReservations.filter(res => {
+                            const resDate = new Date(res.date);
+                            return resDate >= weekStart && resDate <= weekEnd;
+                        });
+                        break;
+                }
+            }
+            
+            // 按预约人搜索
+            if (searchTerm) {
+                filteredReservations = filteredReservations.filter(res => 
+                    res.booker.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            return filteredReservations;
+        }
+        
+        // 导出预约数据为CSV
+        function exportReservationsToCSV() {
+            const dataToExport = getFilteredReservations();
+            
+            if (dataToExport.length === 0) {
+                alert('暂无符合筛选条件的预约数据可导出');
+                return;
+            }
+            
+            // CSV标题行
+            const headers = ['会议室', '日期', '开始时间', '结束时间', '会议主题', '预约人', '预约部门'];
+            
+            // 构建CSV内容
+            let csvContent = headers.join(',') + '\n';
+            
+            dataToExport.forEach(res => {
+                const room = rooms.find(r => r.id === res.room);
+                const row = [
+                    room ? room.name : '未知会议室',
+                    res.date,
+                    res.start,
+                    res.end,
+                    `"${res.title}"`, // 用引号包围以防止逗号问题
+                    `"${res.booker}"`,
+                    `"${res.department || '未指定'}"`
+                ];
+                csvContent += row.join(',') + '\n';
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `会议室预约数据_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert('您的浏览器不支持文件下载功能');
+            }
+        }
+        
+        // 筛选器改变时的处理函数
+        function handleFilterChange() {
+            displayFilteredReservations();
+            updateReservationStats();
+        }
+        
         // 添加筛选器事件监听器
         document.addEventListener('DOMContentLoaded', function() {
             const filterRoom = document.getElementById('filterRoom');
             const filterDate = document.getElementById('filterDate');
             const searchBooker = document.getElementById('searchBooker');
+            const exportBtn = document.getElementById('exportReservationsBtn');
             
             if (filterRoom) {
-                filterRoom.addEventListener('change', displayFilteredReservations);
+                filterRoom.addEventListener('change', handleFilterChange);
             }
             if (filterDate) {
-                filterDate.addEventListener('change', displayFilteredReservations);
+                filterDate.addEventListener('change', handleFilterChange);
             }
             if (searchBooker) {
-                searchBooker.addEventListener('input', displayFilteredReservations);
+                searchBooker.addEventListener('input', handleFilterChange);
             }
+            if (exportBtn) {
+                exportBtn.addEventListener('click', exportReservationsToCSV);
+            }
+            
+            // 确保页面加载完成后，如果显示的是管理页面，也会更新统计数据
+            setTimeout(() => {
+                const managementSection = document.getElementById('managementSection');
+                if (managementSection && managementSection.style.display !== 'none') {
+                    updateReservationStats();
+                }
+            }, 200);
         });
         
         // 点击模态框外部关闭
