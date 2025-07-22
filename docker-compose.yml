@@ -1,4 +1,4 @@
-﻿services:
+services:
   web:
     build: .
     ports:
@@ -6,6 +6,7 @@
     volumes:
       - ./staticfiles:/app/staticfiles
       - ./data:/app/data  # 数据持久化存储
+      - ./logs:/app/logs  # 日志文件存储
     environment:
       - DEBUG=True
       - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,*

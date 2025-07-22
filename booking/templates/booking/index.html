@@ -1839,11 +1839,10 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-calendar-alt"></i> Etek会议室预约系统</h1>
-            <p>高效管理 · 智能预约 · 实时状态</p>
         </header>
         
         <div class="switch-container">
-            <button class="switch-btn active" onclick="showSection('booking')">
+            <button class="switch-btn active" onclick="showBookingSection()">
                 <i class="fas fa-plus-circle"></i> 预约会议
             </button>
             <button class="switch-btn" onclick="showSection('management')">
@@ -3012,16 +3011,22 @@
             if (section === 'booking') {
                 document.getElementById('bookingSection').style.display = 'block';
                 // 找到预约会议按钮并设置为active
-                const bookingBtn = document.querySelector('.switch-btn[onclick="showSection(\'booking\')"]');
+                const bookingBtn = document.querySelector('.switch-btn[onclick="showBookingSection()"]');
                 if (bookingBtn) bookingBtn.classList.add('active');
                 
-                // 滚动到新建预约位置
-                setTimeout(() => {
-                    const bookingFormCard = document.getElementById('bookingFormCard');
-                    if (bookingFormCard) {
-                        bookingFormCard.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }, 100);
+                // 使用更准确的移动设备检测方法
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                                 (window.innerWidth <= 1024 && 'ontouchstart' in window);
+                
+                // 只在桌面端且非触摸设备时自动滚动到新建预约位置
+                if (!isMobile) {
+                    setTimeout(() => {
+                        const bookingFormCard = document.getElementById('bookingFormCard');
+                        if (bookingFormCard) {
+                            bookingFormCard.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }, 100);
+                }
             } else if (section === 'management') {
                 document.getElementById('managementSection').style.display = 'block';
                 // 找到预约管理按钮并设置为active
@@ -3040,6 +3045,20 @@
             if (section !== 'booking') {
                 window.scrollTo({top: 0, behavior: 'smooth'});
             }
+        }
+        
+        // 专门处理新建预约按钮点击的函数
+        function showBookingSection() {
+            // 调用原有的showSection函数
+            showSection('booking');
+            
+            // 在移动端也滚动到表单位置
+            setTimeout(() => {
+                const bookingFormCard = document.getElementById('bookingFormCard');
+                if (bookingFormCard) {
+                    bookingFormCard.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
         }
         
         // 生成会议室选项

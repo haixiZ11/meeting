@@ -26,6 +26,8 @@ COPY . .
 RUN mkdir -p /app/data
 # 创建静态文件目录
 RUN mkdir -p /app/static
+# 创建日志目录
+RUN mkdir -p /app/logs
 
 # 暴露端口
 EXPOSE 8000
@@ -46,4 +48,4 @@ python manage.py runserver 0.0.0.0:8000\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 
 # 使用启动脚本运行应用
-CMD ["/bin/bash", "/app/start.sh"] 
+CMD ["/bin/bash", "/app/start.sh"]
