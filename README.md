@@ -2,7 +2,7 @@
 
 一个基于Django的会议室预约管理系统，支持会议室预约、管理和状态查看功能。
 ##
-![image](https://github.com/haixiZ11/meeting/blob/main/data/home.png)
+![image](https://github.com/haixiZ11/meeting/blob/main/data/%E9%A6%96%E9%A1%B5.png)
 ## 项目特点
 
 - 会议室预约与管理
