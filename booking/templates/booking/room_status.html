@@ -409,8 +409,12 @@
         function generateMonthView(year, month) {
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
+            
+            // 计算日历起始日期 - 
+            const firstDayOfWeek = firstDay.getDay(); // 0=周日, 1=周一, ..., 6=周六
+            // 计算需要回退的天数，确保日历从周日开始
             const startDate = new Date(firstDay);
-            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            startDate.setDate(firstDay.getDate() - firstDayOfWeek);
             
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
@@ -425,10 +429,13 @@
             
             // 生成日历格子
             for (let i = 0; i < 42; i++) {
-                const currentDate = new Date(startDate);
-                currentDate.setDate(startDate.getDate() + i);
-                
-                const dateStr = currentDate.toISOString().split('T')[0];
+                // 日期计算逻辑 
+                const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i);
+                // 使用本地时间生成日期字符串，避免时区问题
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
                 const dayNumber = currentDate.getDate();
                 const isCurrentMonth = currentDate.getMonth() === month;
                 const isToday = dateStr === todayStr;
@@ -437,7 +444,7 @@
                 if (!isCurrentMonth) dayClass += ' other-month';
                 if (isToday) dayClass += ' today';
                 
-                // 获取当天的会议
+                // 过滤当天的预约
                 const dayReservations = reservations.filter(res => res.date === dateStr);
                 
                 let eventsHTML = '';
