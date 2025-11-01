@@ -24,8 +24,9 @@ wheels/
 *.log
 local_settings.py
 db.sqlite3-journal
-media
 db.sqlite3
+media/
+
 # Static files
 staticfiles/
 
@@ -48,3 +49,45 @@ ENV/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# 敏感信息和配置文件
+.env
+.env.local
+.env.production
+.env.staging
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+config.json
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+/data/
+/backups/
+
+# 日志文件
+/logs/
+*.log
+
+# 备份文件
+backup_*.json
+*.backup
+
+# 测试和调试文件
+test_*.py
+debug_*.py
+*_test.py
+*_debug.py
+
+# Webhook和API配置（如果有单独的配置文件）
+webhook_config.py
+api_config.py
+
+# 临时文件
+*.tmp
+*.temp
+.cache/

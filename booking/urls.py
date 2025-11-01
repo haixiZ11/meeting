@@ -20,4 +20,5 @@ urlpatterns = [
     path('api/save_rooms/', api.save_rooms, name='save_rooms'),
     path('api/save_reservations/', api.save_reservations, name='save_reservations'),
     path('api/save_settings/', api.save_settings, name='save_settings'),
+
 ]

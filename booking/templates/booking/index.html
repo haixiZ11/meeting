@@ -534,21 +534,23 @@
         
         .reservation-list {
             background: white;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+            margin-top: 10px;
         }
         
         .reservation-item {
             display: grid;
-            grid-template-columns: 1.2fr 1fr 1.3fr 2fr 1fr 1.2fr 1.5fr;
-            gap: 12px;
-            padding: 12px 16px;
+            grid-template-columns: 0.9fr 0.8fr 0.8fr 1.5fr 0.8fr 0.8fr 0.9fr 0.9fr;
+            gap: 2px;
+            padding: 4px 6px;
             align-items: center;
             border-bottom: 1px solid #eee;
-            transition: background-color 0.3s;
-            font-size: 0.9rem;
-            min-height: 50px;
+            transition: background-color 0.2s;
+            font-size: 0.75rem;
+            min-height: 28px;
+            line-height: 1.1;
         }
         
         .reservation-item:hover {
@@ -560,8 +562,9 @@
             color: white;
             font-weight: 600;
             border-bottom: none;
-            font-size: 0.95rem;
-            padding: 14px 16px;
+            font-size: 0.8rem;
+            padding: 4px 6px;
+            line-height: 1.1;
         }
         
         .reservation-item-header:hover {
@@ -597,17 +600,18 @@
         
         .reservation-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
         
         .action-btn {
-            padding: 6px 12px;
+            padding: 4px 8px;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             transition: all 0.3s;
+            line-height: 1.2;
         }
         
         .btn-edit {
@@ -688,26 +692,27 @@
              }
              
              .reservation-item {
-                 grid-template-columns: 1fr;
-                 gap: 8px;
-                 text-align: left;
-                 padding: 15px;
-                 font-size: 0.85rem;
-             }
-             
-             .reservation-item > div {
-                 display: flex;
-                 justify-content: space-between;
-                 align-items: center;
-                 padding: 5px 0;
-                 border-bottom: 1px solid #f0f0f0;
-             }
-             
-             .reservation-item > div:last-child {
-                 border-bottom: none;
-                 justify-content: center;
-                 padding-top: 10px;
-             }
+                grid-template-columns: 1fr;
+                gap: 3px;
+                text-align: left;
+                padding: 6px 8px;
+                font-size: 0.75rem;
+                line-height: 1.1;
+            }
+            
+            .reservation-item > div {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 2px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .reservation-item > div:last-child {
+                border-bottom: none;
+                justify-content: center;
+                padding-top: 5px;
+            }
              
              .reservation-item > div::before {
                  content: attr(data-label) ': ';
@@ -1043,7 +1048,7 @@
             }
             
             .today-reservation-time::before {
-                content: "时间: ";
+                content: "预约时间: ";
                 font-weight: bold;
                 color: #666;
             }
@@ -1931,7 +1936,7 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="bookingDate">选择日期</label>
+                                <label for="bookingDate">会议日期</label>
                                 <input type="date" id="bookingDate" required>
                             </div>
                         </div>
@@ -2014,6 +2019,7 @@
                         <option value="">所有会议室</option>
                     </select>
                     <select id="filterDate" class="filter-select">
+                        <option value="upcoming" selected>未开始的会议</option>
                         <option value="">所有日期</option>
                         <option value="today">今天</option>
                         <option value="tomorrow">明天</option>
@@ -2045,11 +2051,12 @@
             <div class="reservation-list">
                 <div class="reservation-item reservation-item-header">
                     <div>会议室</div>
-                    <div>日期</div>
+                    <div>预约日期</div>
                     <div>时间</div>
                     <div>会议主题</div>
                     <div>预约人</div>
                     <div>预约部门</div>
+                    <div>创建日期</div>
                     <div>操作</div>
                 </div>
                 <div id="managementContainer">
@@ -2303,14 +2310,14 @@
             }
         }
         
-        // 设置预约日期范围（7天内）
+        // 设置预约日期范围（31天内）
         function setBookingDateRange() {
             const today = new Date();
             const dateInput = document.getElementById('bookingDate');
             dateInput.valueAsDate = today;
             dateInput.min = today.toISOString().split('T')[0];
             const maxDate = new Date();
-            maxDate.setDate(today.getDate() + 7);
+            maxDate.setDate(today.getDate() + 31);
             dateInput.max = maxDate.toISOString().split('T')[0];
         }
         
@@ -2587,9 +2594,14 @@
         
         // 更新可用时间段显示
         function updateAvailableTimeSlots() {
-            const roomId = document.getElementById('meetingRoom').value;
-            const date = document.getElementById('bookingDate').value;
+            const roomId = document.getElementById('meetingRoom')?.value;
+            const date = document.getElementById('bookingDate')?.value;
             const container = document.getElementById('availableTimeSlots');
+            
+            if (!container) {
+                console.log('availableTimeSlots 容器不存在');
+                return;
+            }
             
             if (!roomId || !date) {
                 container.innerHTML = '<div class="time-slot">请先选择会议室和日期</div>';
@@ -2920,63 +2932,103 @@
             }
         }
         
-        // 创建默认会议室数据
+        // 检查会议室数据并提示管理员配置
         async function createDefaultRooms() {
-            const defaultRooms = [
-                {
-                    id: 'room1',
-                    name: '会议室A',
-                    capacity: 10,
-                    description: '小型会议室，适合团队讨论',
-                    equipment: '投影仪、白板、电话会议系统',
-                    status: 'available'
-                },
-                {
-                    id: 'room2',
-                    name: '会议室B',
-                    capacity: 20,
-                    description: '中型会议室，适合部门会议',
-                    equipment: '大屏显示器、音响系统、视频会议设备',
-                    status: 'available'
-                },
-                {
-                    id: 'room3',
-                    name: '会议室C',
-                    capacity: 50,
-                    description: '大型会议室，适合全员会议',
-                    equipment: '舞台、音响系统、多媒体设备、同声传译',
-                    status: 'available'
-                },
-                {
-                    id: 'room4',
-                    name: '培训室',
-                    capacity: 30,
-                    description: '培训专用教室',
-                    equipment: '投影仪、音响、可移动桌椅',
-                    status: 'available'
-                }
-            ];
-            
+            // 检查是否有会议室数据
             try {
-                const response = await fetch('/api/save_rooms/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify(defaultRooms)
-                });
-                const result = await response.json();
-                if (result.success) {
-                    console.log('默认会议室数据创建成功');
-                } else {
-                    console.error('默认会议室数据创建失败');
+                const checkResponse = await fetch('/api/load_rooms/');
+                if (checkResponse.ok) {
+                    const existingRooms = await checkResponse.json();
+                    if (existingRooms && existingRooms.length > 0) {
+                        console.log('检测到现有会议室数据');
+                        return true;
+                    }
                 }
-                return result.success;
             } catch (error) {
-                console.error('创建默认会议室数据时出错:', error);
+                console.error('检查现有数据时出错:', error);
                 return false;
             }
+            
+            // 如果没有会议室数据，提示管理员通过Django后台创建
+            const adminUrl = window.location.origin + '/admin/booking/room/';
+            const message = 
+                '系统检测到没有会议室数据。\n\n' +
+                '请联系系统管理员通过Django后台管理界面创建会议室：\n' +
+                adminUrl + '\n\n' +
+                '所有会议室数据都应该通过数据库后台统一管理。';
+            
+            alert(message);
+            
+            // 显示提示消息
+            showNotification('请通过Django后台创建会议室数据', 'warning');
+            
+            console.log('提示用户通过Django后台创建会议室数据');
+            return false;
+        }
+        
+        // 显示通知消息
+        function showNotification(message, type = 'info') {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 5px;
+                color: white;
+                font-weight: bold;
+                z-index: 10000;
+                max-width: 400px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            // 设置背景色
+            switch (type) {
+                case 'success':
+                    notification.style.backgroundColor = '#4CAF50';
+                    break;
+                case 'error':
+                    notification.style.backgroundColor = '#f44336';
+                    break;
+                case 'warning':
+                    notification.style.backgroundColor = '#ff9800';
+                    break;
+                default:
+                    notification.style.backgroundColor = '#2196F3';
+            }
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // 添加CSS动画
+        if (!document.getElementById('notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
         }
         
         // 获取CSRF Token
@@ -3083,7 +3135,7 @@
             
             // 清空现有选项
             roomFilter.innerHTML = '<option value="">所有会议室</option>';
-            dateFilter.innerHTML = '<option value="">所有日期</option><option value="today">今天</option><option value="tomorrow">明天</option><option value="week">本周</option>';
+            dateFilter.innerHTML = '<option value="upcoming" selected>未开始的会议</option><option value="">所有日期</option><option value="today">今天</option><option value="tomorrow">明天</option><option value="week">本周</option>';
             
             // 添加会议室选项
             rooms.forEach(room => {
@@ -3185,9 +3237,9 @@
         
         // 显示预约管理列表
         function displayManagement() {
-            // 重置筛选器
+            // 重置筛选器（保持日期筛选器的默认值）
             document.getElementById('filterRoom').value = '';
-            document.getElementById('filterDate').value = '';
+            document.getElementById('filterDate').value = 'upcoming'; // 保持默认的"未开始的会议"选项
             document.getElementById('searchBooker').value = '';
             
             // 显示所有预约
@@ -3232,6 +3284,13 @@
                 'unavailable': '不可用'
             };
             return statusMap[status] || status;
+        }
+        
+        // 更新会议室可用性
+        function updateRoomAvailability() {
+            // 这个函数用于更新会议室的可用性状态
+            // 可以在这里添加具体的逻辑来更新会议室状态显示
+            console.log('更新会议室可用性状态');
         }
         
         // 更新当前事件
@@ -3875,12 +3934,11 @@
         function displayFilteredReservations() {
             const filteredReservations = getFilteredReservations();
             
-            // 按日期和时间排序
+            // 按预约日期时间降序排序（最近的会议在上）
             filteredReservations.sort((a, b) => {
-                if (a.date !== b.date) {
-                    return new Date(a.date) - new Date(b.date);
-                }
-                return a.start.localeCompare(b.start);
+                const dateTimeA = new Date(a.date + ' ' + a.start);
+                const dateTimeB = new Date(b.date + ' ' + b.start);
+                return dateTimeB - dateTimeA; // 降序排序
             });
             
             // 显示筛选后的结果
@@ -3906,6 +3964,7 @@
                         <div data-label="会议主题">${res.title}</div>
                         <div data-label="预约人">${res.booker}</div>
                         <div data-label="预约部门">${res.department || '未指定'}</div>
+                        <div data-label="创建日期">${res.created_at || '未知'}</div>
                         <div class="reservation-actions">
                              <button class="action-btn btn-edit" onclick="editReservation(${res.id})">
                                  <i class="fas fa-edit"></i> 编辑
@@ -3927,14 +3986,31 @@
             
             let filteredReservations = [...reservations];
             
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const currentTime = now.toTimeString().slice(0, 5);
+            
+            // 根据日期过滤器的值决定是否过滤已开始的会议
+            if (dateFilter === 'upcoming' || (!dateFilter && document.getElementById('filterDate').value === 'upcoming')) {
+                // "未开始的会议" - 过滤掉已经开始的会议
+                filteredReservations = filteredReservations.filter(res => {
+                    // 如果是今天的会议，检查是否已经开始
+                    if (res.date === today) {
+                        return res.start > currentTime; // 只显示还未开始的会议
+                    }
+                    // 如果是未来日期的会议，都显示
+                    return new Date(res.date) > new Date(today);
+                });
+            }
+            // 如果选择"所有日期"（dateFilter为空字符串），则不过滤已开始的会议
+            
             // 按会议室筛选
             if (roomFilter) {
                 filteredReservations = filteredReservations.filter(res => res.room === roomFilter);
             }
             
             // 按日期筛选
-            if (dateFilter) {
-                const today = new Date().toISOString().split('T')[0];
+            if (dateFilter && dateFilter !== 'upcoming') {
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 const tomorrowStr = tomorrow.toISOString().split('T')[0];
@@ -3979,7 +4055,7 @@
             }
             
             // CSV标题行
-            const headers = ['会议室', '日期', '开始时间', '结束时间', '会议主题', '预约人', '预约部门'];
+            const headers = ['会议室', '日期', '开始时间', '结束时间', '会议主题', '预约人', '预约部门', '创建日期'];
             
             // 构建CSV内容
             let csvContent = headers.join(',') + '\n';
@@ -3993,7 +4069,8 @@
                     res.end,
                     `"${res.title}"`, // 用引号包围以防止逗号问题
                     `"${res.booker}"`,
-                    `"${res.department || '未指定'}"`
+                    `"${res.department || '未指定'}"`,
+                    `"${res.created_at || '未知'}"`
                 ];
                 csvContent += row.join(',') + '\n';
             });

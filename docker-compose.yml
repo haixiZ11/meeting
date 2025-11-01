@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "8000:8000"
+      - "33081:8000"
     volumes:
       - ./staticfiles:/app/staticfiles
       - ./data:/app/data  # 数据持久化存储
